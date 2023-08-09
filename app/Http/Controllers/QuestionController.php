@@ -298,6 +298,7 @@ class QuestionController extends Controller
     }
     public function examineEnd(Course $course,int $examine){
     event(new ExamineStartEvent($examine));
+    echo "da";
     return \redirect()->route("course.show",[$course]);
     }
 }
