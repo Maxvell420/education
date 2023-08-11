@@ -13,7 +13,7 @@ Route::prefix("users")->group(function (){
 Route::get("users/registration",[UsersController::class,"create"])->name("users/create");
 
 
-Route::get("/login",[UsersController::class,"login"])->name("login");
+Route::get("",[UsersController::class,"login"])->name("login");
 
 Route::prefix("questions")->group(function (){
     Route::post("questions/store/{course}",[QuestionController::class,"store"])->name('questions/store');

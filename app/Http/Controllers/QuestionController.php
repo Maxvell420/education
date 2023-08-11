@@ -25,7 +25,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 
-
 class QuestionController extends Controller
 {
     /**
@@ -162,7 +161,7 @@ class QuestionController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('login');
+        return redirect()->route("logout");
     }
 
     public function courseCreate():Renderable
@@ -298,7 +297,6 @@ class QuestionController extends Controller
     }
     public function examineEnd(Course $course,int $examine){
     event(new ExamineStartEvent($examine));
-    echo "da";
     return \redirect()->route("course.show",[$course]);
     }
 }

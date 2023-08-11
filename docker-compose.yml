@@ -8,13 +8,13 @@ services:
         volumes:
         - ./:/var/www
         working_dir: /var/www
-    redis:
-        container_name: redis
-        image: 'redis'
-        ports:
-            - '${REDIS_PORT}:${REDIS_PORT}'
-        networks:
-            - app
+#    redis:
+#        container_name: redis
+#        image: 'redis'
+#        ports:
+#            - '${REDIS_PORT}:${REDIS_PORT}'
+#        networks:
+#            - app
     nginx:
         image: nginx:alpine
         container_name: nginx
@@ -27,19 +27,32 @@ services:
         depends_on:
             - app
             - pgsql
-    node:
-        container_name: nodeJS
-        build:
-            context: .docker/node
-            dockerfile: Dockerfile
-        tty: true
-        ports:
-            - "5173:5173"
-        working_dir: /var/www
+    ngrok:
+        container_name: ngrok
+        image: ngrok/ngrok:latest
+        restart: unless-stopped
+        command:
+            - "start"
+            - "--all"
+            - "--config"
+            - "/etc/ngrok.yml"
         volumes:
-                    - .:/var/www # Монтируем локальную папку в контейнер как /var/ww
-        networks:
-            - app
+            - ./ngrok.yml:/etc/ngrok.yml
+        ports:
+            - "4040:4040"
+#    node:
+#        container_name: nodeJS
+#        build:
+#            context: .docker/node
+#            dockerfile: Dockerfile
+#        tty: true
+#        ports:
+#            - "5173:5173"
+#        working_dir: /var/www
+#        volumes:
+#                    - .:/var/www # Монтируем локальную папку в контейнер как /var/ww
+#        networks:
+#            - app
     pgsql:
         container_name: pgsql
         image: 'postgres'
@@ -52,7 +65,6 @@ services:
             POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
         volumes:
             - ./.docker/postgresql/data:/var/lib/postgresql/data
-
 networks:
     app:
         driver: bridge
