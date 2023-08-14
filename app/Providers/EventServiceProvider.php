@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Events\ExamineStartEvent;
 use App\Events\UserRegistrationEvent;
+use App\Events\BotMessageEvent;
+use App\Listeners\BotMessageRegisterListener;
 use App\Listeners\ExamineCloseListener;
 use App\Listeners\SendNotesListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -17,7 +19,8 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         UserRegistrationEvent::class=>[SendNotesListener::class],
-        ExamineStartEvent::class=>[ExamineCloseListener::class]];
+        ExamineStartEvent::class=>[ExamineCloseListener::class],
+        BotMessageEvent::class=>[BotMessageRegisterListener::class]];
 
     /**
      * Register any events for your application.

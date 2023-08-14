@@ -5,19 +5,19 @@ namespace App\Models;
 use App\Events\UserRegistrationEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-
+use Laravel\Passport\HasApiTokens;
 class User extends Authenticatable
 {
 
+    protected $fillable=["name","email","password"];
+    protected $hidden=["password"];
+    use HasFactory,HasApiTokens;
     protected static function booted()
     {
         static::created(function ($model){
-        event(new UserRegistrationEvent($model));
+            event(new UserRegistrationEvent($model));
         });
     }
-    protected $fillable=["name","email","password"];
-    protected $hidden=["password"];
-    use HasFactory;
     public function roles(){
         return $this->hasOne(Role::class);
     }

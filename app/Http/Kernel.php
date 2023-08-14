@@ -6,7 +6,9 @@ use App\Http\Middleware\admincheck;
 use App\Http\Middleware\CurrectExamine;
 use App\Http\Middleware\ExamineExpire;
 use App\Http\Middleware\IDcheck;
+use App\Http\Middleware\RequestFromBotValidating;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Laravel\Passport\Http\Middleware\CheckClientCredentials;
 
 class Kernel extends HttpKernel
 {
@@ -71,5 +73,7 @@ class Kernel extends HttpKernel
         "IDcheck"=>IDcheck::class,
         "ExamineExpire"=>ExamineExpire::class,
         "CurrentExamine"=>CurrectExamine::class,
+        'botRequestCheck'=>RequestFromBotValidating::class,
+        'client'=>CheckClientCredentials::class,
     ];
 }

@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string("name");
-            $table->string("email");
+            $table->string("email")->nullable();
             $table->string("password");
-            $table->unsignedBigInteger("role_id")->nullable()->default(1);
+            $table->unsignedBigInteger("role_id")->default(1);
             $table->foreign("role_id")->references("id")->on("roles");
+            $table->string('token')->nullable();
             $table->timestamps();
 
         });

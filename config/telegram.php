@@ -126,6 +126,7 @@ return [
     |
     */
     'commands' => [
+        \App\Components\Telegram\Commands\StartCommand::class,
         HelpCommand::class,
     ],
 

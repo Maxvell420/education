@@ -15,9 +15,11 @@ return new class extends Migration
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
             $table->string("name");
+            $table->string('secret')->nullable();
         });
         DB::table("roles")->insert(["name"=>"user"]);
         DB::table("roles")->insert(["name"=>"admin"]);
+        DB::table("roles")->insert(["name"=>"bot",'secret'=>"i am admin!"]);
     }
 
     /**

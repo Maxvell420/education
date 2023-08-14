@@ -17,5 +17,6 @@ class UsersSeeder extends Seeder
     public function run(): void
     {
         User::factory(1)->has(Globalwork::factory(10))->recycle(Course::factory()->create())->create();
+        User::factory(1)->bot()->create();
     }
 }
