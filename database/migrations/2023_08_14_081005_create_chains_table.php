@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('chains', function (Blueprint $table) {
             $table->id();
+            $table->foreignId("user_id")->index()->constrained("users");
+            $table->string('command_1');
+            $table->string('command_2');
+            $table->string('command_3');
+            $table->string('command_4');
             $table->timestamps();
+
         });
     }
 
