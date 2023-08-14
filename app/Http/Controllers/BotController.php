@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Components\NgrokAPI;
 use App\Models\Url;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Hash;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class BotController extends Controller
@@ -49,6 +51,10 @@ class BotController extends Controller
     }
     public function test(){
         $url=Url::first('url');
-        return 'yes';
+        $user=User::find(1)->first();
+        if (Hash::check(12345,$user->password)){
+            return 'yes';
+        }
+        return 'no';
     }
 }
