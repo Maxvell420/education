@@ -41,9 +41,6 @@ class BotController extends Controller
         Telegram::removeWebhook();
     }
     public function getMe(){
-        if (http_response_code()==200){
-            return "yes";
-        }
         return Telegram::getMe();
     }
     public function getUpdates(){

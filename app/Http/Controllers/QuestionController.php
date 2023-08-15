@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Events\ExamineStartEvent;
-use App\Jobs\ExamineClosureJob;
 use App\Models\Examine;
 use App\Http\Requests\AnswersRequest;
 use App\Http\Requests\ExamRequest;
@@ -17,8 +16,9 @@ use App\Models\Exam;
 use App\Models\Globalwork;
 use App\Models\Question;
 use App\Models\User;
+use App\Services\GlobalworkService;
+use App\Services\QuestionService;
 use Carbon\Carbon;
-use Carbon\CarbonInterval;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,16 +28,6 @@ use Illuminate\Support\Facades\Redirect;
 class QuestionController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index():Renderable
-    {
-        $user = auth()->user();
-        $questions = Question::query()->orderBy("id")->where("user_id", $user->id())->simplepaginate(10);
-        return view("questions.dashboard", ["user" => $user, "questions" => $questions]);
-    }
-
-    /**
      * Show the form for creating a new resource.
      */
     public function create(Course $course):Renderable
@@ -46,35 +36,12 @@ class QuestionController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created Question and checks request on file existence
      */
-    public function fileStore(Request $request,Question $question) {
-        $file=$request->file("file");
-        $filenameOriginal=$request->file("file")->getClientOriginalName();
-        $formatPointNum=strripos($filenameOriginal,".");
-        $formatLenghtNum=strlen($filenameOriginal);
-        $formatNum=$formatLenghtNum-$formatPointNum;
-        $format=mb_substr($filenameOriginal,-$formatNum,$formatNum);
-        $course=$question->course()->first();
-        $filename=$course->courseName."-".$question->title.$format;
-        $path=$course->courseName."/".$question->title;
-            $file->storeAs("questionStorage",$filename);
-            $file->move(public_path($path),$filename);
-        Downloads::query()->Create(["question_id"=>$question->id,
-            "course_id"=>$course->id,
-            "path"=>$path,
-            "original_name"=>$filenameOriginal,
-            "given_name"=>$filename]);
-
-    }
     public function store(QuestionRequest $request,Course $course):RedirectResponse
     {
-        $question=$course->questions()->create($request->validated());
-        /*добавляет вопрос в таблицу questions, и ответы в таблицу answers с id равным максимальному id из таблицы questions*/
-        if ($request->file("file")!==null) {
-            $this->filestore($request,$question);
-        }
-        $request->session()->forget("current_course");
+        $question=new QuestionService();
+        $question->questionCreate($request,$course);
         return redirect("admindashboard");
     }
 
@@ -83,20 +50,13 @@ class QuestionController extends Controller
      */
     public function show(Course $course)
     {
-        $examine=User::find(auth()->user()->id)->currectExamine()->first("id");
-        if (!isset($examine->id)){
-            $examine=null;
-        }
-        else $examine=$examine->id;
-        $query=$course->globalworksGet($examine);
-        $globalworks=$query->paginate(1);
-        $question=$globalworks->items()[0]->question()->first();
-        $file=Downloads::query()->where("question_id",$question->id)->first();
-        if ($question->question_type=="test") {
-            return view("questions.showTest",["question"=>$question,"file"=>$file,"globalworks"=>$globalworks,"examine"=>$examine,"course"=>$course]);
+        $Globalwork= new GlobalworkService();
+        $data=$Globalwork->globalworkShow($course);
+        if ($data['question']->question_type=="test") {
+            return view("questions.showTest",['data'=>$data]);
         }
         else {
-            return view("questions.showWriting",["question"=>$question,"file"=>$file,"globalworks"=>$globalworks,"examine"=>$examine,"course"=>$course]);
+            return view("questions.showWriting",['data'=>$data]);
         }
     }
 
@@ -136,7 +96,7 @@ class QuestionController extends Controller
             $question->userAnswer($examine)->increment("num_attempts",1,["user_answer"=>"correct","answer_check"=>true]);
             $totalAttempts=$question->globalworks()->sum("num_attempts");
             Question::find($question->id)->update(["total_attempts"=>$totalAttempts]);
-            //если exam то без сообщения
+            //если exam то без сообщения сделано во вьюхе
             return Redirect::back()->with("message","Good job! you may proceed");
         }
         else {
@@ -266,11 +226,10 @@ class QuestionController extends Controller
     {
         $examine=$exam->examines()->create(["user_id"=>\auth()->user()->id,
             "examine_expires"=>$seconds=now()->addMinutes($exam->minutes_for_exam)]);
-        event(new ExamineStartEvent($examine->id,$seconds->diffInSeconds()));
-        return redirect()->route("question/show",[$this->examWorksCreate($exam,$examine)]);
+        return redirect()->route("question/show",[$this->examWorksCreate($exam,$examine,$seconds)]);
 
     }
-    public function examWorksCreate(Exam $exam,Examine $examine){
+    public function examWorksCreate(Exam $exam,Examine $examine,Carbon $seconds){
         $query = [];
         $course=$exam->course()->first();
         $questions = $course->questions()->get()->modelKeys();
@@ -284,6 +243,7 @@ class QuestionController extends Controller
                 "updated_at" => now()];
         }
         Globalwork::insert($query);
+        event(new ExamineStartEvent($examine->id,$seconds->diffInSeconds()));
         return $course;
     }
     public function examineResults(Exam $exam){
