@@ -1,6 +1,6 @@
 Bellow you can write mistakes in {{$question->problem}} question
 <div>
-    <form action="{{route("globalworks.messageStore",$globalworks)}}" method="post">
+    <form action="{{route("message.store",$globalworks)}}" method="post">
         @csrf
         <div>
             <input type="text" name="message" >

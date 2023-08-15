@@ -17,9 +17,9 @@ class ExamineExpire
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $examine=User::find(auth()->user()->id)->currectExamine()->first("id");
-            if(!isset($examine->id)){
-                $exam=$request->course->exams()->where("exam_closure",false)->first();
+        $examine=User::find(auth()->user()->id)->currectExamine()->first();
+            if(isset($examine->id)){
+                $exam=$examine->exam()->first();
             return redirect()->route("examine.results",[$exam]);
             }
             else return $next($request);

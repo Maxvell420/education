@@ -14,7 +14,7 @@ class CourseService
     public function courseStore(Request $request):void{
         Course::query()->create(["courseName" => $request->input("courseName")]);
     }
-    public function courseEdit(Course $course):Question
+    public function courseEdit(Course $course):Collection
     {
         return Question::where("course_id",$course->id)->get();
     }

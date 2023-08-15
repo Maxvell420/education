@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Redirect;
 
 class MessageService
 {
-    public function messageStore(MessageRequest $request,Globalwork $globalworks){
+    public function messageStore(MessageRequest $request,Globalwork $globalworks):void
+    {
         $message = new Chat_message();
         if (auth()->user()->role_id===2){
             $message->administrative=true;
@@ -18,7 +19,6 @@ class MessageService
         $message->message = $request->validated("message");
         $message->globalwork_id=$globalworks->id;
         $message->save();
-        return Redirect::back()->with("message","your message was successfully sent");
     }
     public function messageShow(Globalwork $globalworks):Collection
     {

@@ -15,4 +15,7 @@ class Examine extends Model
     {
         return $this->hasMany(Globalwork::class);
     }
+    public function exam(){
+        return $this->belongsTo(Exam::class);
+    }
 }

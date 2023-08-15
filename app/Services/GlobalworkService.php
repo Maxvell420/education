@@ -4,13 +4,14 @@ namespace App\Services;
 
 use App\Models\{Course,Downloads,Exam,Examine,Globalwork,Question,User};
 use App\Http\Requests\AnswersRequest;
+use Illuminate\Support\Collection;
 
 class GlobalworkService
 {
     /*
          * if adding new data in the array, place it in end of return array
          * */
-    public function GlobalworkShowData(Course $course):\Illuminate\Support\Collection
+    public function GlobalworkShowData(Course $course):Collection
     {
         $examine=User::find(auth()->user()->id)->currectExamine()->first("id");
         if (!isset($examine->id)) {

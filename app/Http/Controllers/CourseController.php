@@ -8,29 +8,29 @@ use Illuminate\Http\{Request,RedirectResponse};
 
 class CourseController extends Controller
 {
-    public function Create():Renderable
+    public function create():Renderable
     {
         return view("course.coursecreate");
     }
-    public function Store(Request $request):RedirectResponse
+    public function store(Request $request):RedirectResponse
     {
         $course=new CourseService();
         $course->courseStore($request);
         return redirect("admindashboard");
     }
-    public function Edit(Course $course):Renderable
+    public function edit(Course $course):Renderable
     {
         $edit=new CourseService();
         $questions=$edit->courseEdit($course);
         return view("course.courseedit", ["course" => $course,"questions"=>$questions]);
     }
-    public function Show(Course $course):Renderable
+    public function show(Course $course):Renderable
     {
         $courseService = new CourseService();
         $data = $courseService->courseShow($course);
         return view("course.courseshow", ['data'=>$data]);
     }
-    public function Open(Course $course){
+    public function open(Course $course){
         $courseService = new CourseService();
         $courseService->courseOpen($course);
         return redirect()->route("course.show",$course);

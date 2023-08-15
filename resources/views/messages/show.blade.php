@@ -12,7 +12,7 @@ about {{$data['question->problem']}} in {{$data['course']->courseName}}
     @endforeach
 </div>
 <div>
-    <form action="{{route("globalworks.messageStore",$data['globalworks'])}}" method="post">
+    <form action="{{route("message.store",$data['globalworks'])}}" method="post">
         @csrf
         <div>
             <input type="text" name="message" >
