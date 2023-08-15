@@ -3,16 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
-use App\Models\Chat_message;
-use App\Models\Course;
-use App\Models\Globalwork;
-use App\Models\Note;
-use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Auth;
+use App\Models\{Chat_message,Course,Globalwork,Note,User};
+use Illuminate\{Contracts\Support\Renderable,Http\RedirectResponse,Http\Request,
+    Support\Facades\Hash, Validation\ValidationException,Support\Facades\Auth};
 
 class UsersController extends Controller
 {
@@ -103,6 +96,13 @@ class UsersController extends Controller
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
     }
+    public function logout(Request $request):RedirectResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route("logout");
+    }
     public function login(User $user)
     {
         return view("users.login", ["user" => $user]);
@@ -126,9 +126,12 @@ class UsersController extends Controller
         }
         return view("messages.chats",["info"=>$info]);
     }
-    public function must(Request $request){
-
-        $course= Course::find($request->id);
-        return $course;
+    public function dashboard():Renderable
+    {
+        $user=Auth::user();
+        $joined_courses= Course::whereHas("globalworksGet")->get();
+        $available_courses=Course::all()->diff($joined_courses)->where("course_complete","!=",null);
+        $chats=Globalwork::has("messages")->where("user_id",\auth()->user()->id)->get();
+        return view("users.dashboard", ["user" => $user, "courses" => $available_courses, "joined_courses" => $joined_courses,"chats"=>$chats]);
     }
 }

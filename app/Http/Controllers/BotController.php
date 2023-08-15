@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Components\NgrokAPI;
-use App\Models\Url;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Models\{Url,User};
 use Illuminate\Support\Facades\Hash;
 use Telegram\Bot\Laravel\Facades\Telegram;
 

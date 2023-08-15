@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Requests\QuestionRequest;
+use App\Http\Requests\QuestionUpdateRequest;
 use App\Models\Course;
 use App\Models\Downloads;
 use App\Models\Question;
@@ -19,7 +20,7 @@ class QuestionService
             $this->filestore($request,$question);
         }
     }
-    public function fileStore(Request $request,Question $question) {
+    public function fileStore(Request $request,Question $question):void {
         $file=$request->file("file");
         $filenameOriginal=$request->file("file")->getClientOriginalName();
         $formatPointNum=strripos($filenameOriginal,".");
@@ -38,7 +39,22 @@ class QuestionService
             "given_name"=>$filename]);
 
     }
-    public function Handle(){
-
+    public function questionUpdate(QuestionUpdateRequest $request,Question $question):string
+    {
+        if ($question->downloads()->first() !== null) {
+            $file=$question->downloads()->first();
+            $file->delete();
+            if (file_exists(public_path($file->path.'/'.$file->given_name)))
+            {
+                unlink(public_path($file->path.'/'.$file->given_name));
+            }
+        }
+        if ($request->file('file'))
+        {
+            $this->fileStore($request,$question);
+        }
+        $question->update($request->validated());
+        /* Удаляет картинку к вопросу из папки public*/
+        return 'question was updated with success';
     }
 }

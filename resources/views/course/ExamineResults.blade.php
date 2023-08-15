@@ -1,5 +1,5 @@
 This is your results in :
-@foreach($examines as $examine)
+@foreach($data['examines'] as $examine)
     <div>{{$examine->get("user_answer")}}</div>
     <div>{{$examine->get("id")}} сделать попытки?</div>
     <div>{{$examine->get("correct_answers_percentage")}}%</div>
