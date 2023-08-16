@@ -9,15 +9,15 @@ use Laravel\Passport\HasApiTokens;
 class User extends Authenticatable
 {
 
-    protected $fillable=["name","email","password"];
+    protected $fillable=["name","email","password",'telegram_id','token'];
     protected $hidden=["password"];
     use HasFactory,HasApiTokens;
-    protected static function booted()
-    {
-        static::created(function ($model){
-            event(new UserRegistrationEvent($model));
-        });
-    }
+//    protected static function booted()
+//    {
+//        static::created(function ($model){
+//            event(new UserRegistrationEvent($model));
+//        });
+//    }
     public function roles(){
         return $this->hasOne(Role::class);
     }

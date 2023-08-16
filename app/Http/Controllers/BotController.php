@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Components\NgrokAPI;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Telegram\Bot\Keyboard\Keyboard;
 use App\Models\{Url,User};
 use Illuminate\Support\Facades\Hash;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -44,11 +46,25 @@ class BotController extends Controller
         return Telegram::getUpdates();
     }
     public function test(){
-        $url=Url::first('url');
-        $user=User::find(1)->first();
-        if (Hash::check(12345,$user->password)){
-            return 'yes';
+        switch (User::where('name','velichko')->first()){
+            case !null:
+                $text = 'You already started';
+                break;
+            case null:
+                User::create(['name'=>'Mavelich','telegram_id'=>12315151]);
+                $text='Hey, there! Welcome to our bot!';
         }
-        return 'no';
+        $reply_markup = Keyboard::make([
+            'keyboard' => [
+                    Keyboard::button([['text'=>'available courses','request_contact'=>true],
+                    Keyboard::button(['text'=>'joined courses'])
+                    ])],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => true,]);
+        Telegram::sendMessage([
+            'text' => $text,
+            'chat_id'=>1955425357,
+            'reply_markup' => $reply_markup
+        ]);
     }
 }

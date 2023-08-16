@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string("name");
             $table->string("email")->nullable();
-            $table->string("password");
+            $table->string("password")->nullable();
+            $table->string('telegram_id')->nullable();
             $table->unsignedBigInteger("role_id")->default(1);
             $table->foreign("role_id")->references("id")->on("roles");
             $table->string('token',1500)->nullable();
