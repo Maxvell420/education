@@ -33,16 +33,16 @@ Route::prefix('examine')->group(function(){
     Route::get("/{course}/{examine}/end",[ExamineController::class,"end"])->name("examine.end");
     })->middleware("auth");
 
-Route::get("dashboard",[QuestionController::class,"dashboard"])->name("dashboard")->middleware("auth");
+Route::get("dashboard",[UsersController::class,"dashboard"])->name("dashboard")->middleware("auth");
 Route::post("auth",[UsersController::class,"authenticate"])->name("auth");
-Route::get("logout",[QuestionController::class,"logout"])->name("logout");
+Route::get("logout",[UsersController::class,"logout"])->name("logout");
 Route::get("admindashboard",[UsersController::class,"admindashboard"])->name("admindashboard")->middleware("auth","admincheck");
 
 Route::prefix("globalworks")->group(function () {
     Route::get("/show/{course}",[GlobalworkController::class,"show"])->name("globalworks.show")->middleware(["ExamineExpire"]);
     Route::patch("/{question}/update/{examine?}",[GlobalworkController::class,"Update"])->name("globalworks.update");
     Route::post("/{course}/refresh",[QuestionController::class,"Refresh"])->name("globalworks.refresh");
-    Route::post("/{course}/join/{exam?}/{examine?}",[QuestionController::class,"Create"])->name("globalworks.create");
+    Route::post("/{course}/join/{exam?}/{examine?}",[GlobalworkController::class,"Create"])->name("globalworks.create");
 })->middleware("auth");
 
 Route::prefix("message")->group(function (){

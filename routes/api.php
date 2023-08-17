@@ -21,11 +21,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 //Route::middleware('auth:api')->get("/bot",[BotController::class,"getMe"]);
 Route::get('setUpWebHook',[BotController::class,'setUpWebHook'])->name("bot.setUpWebHook");
-Route::middleware(['botRequestCheck','client'])->post('',function (){
-    $update=Telegram::commandsHandler(true);
-    event(new \App\Events\BotMessageEvent($update));
-});
+Route::middleware(['botRequestCheck','client'])->post('',[BotController::class,'handle']);
+
 Route::get('removeWebhook',[BotController::class,'removeWebhook']);
 Route::get('getMe',[BotController::class,'getMe']);
 Route::get('getUpdates',[BotController::class,'getUpdates']);
 Route::middleware('botRequestCheck','client')->get('test',[BotController::class,'test']);
+Route::get('delete',[BotController::class,'delete']);
