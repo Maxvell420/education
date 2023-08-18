@@ -39,11 +39,12 @@ Route::get("logout",[UsersController::class,"logout"])->name("logout");
 Route::get("admindashboard",[UsersController::class,"admindashboard"])->name("admindashboard")->middleware("auth","admincheck");
 
 Route::prefix("globalworks")->group(function () {
-    Route::get("/show/{course}",[GlobalworkController::class,"show"])->name("globalworks.show")->middleware(["ExamineExpire"]);
+    Route::get("/show/{course}",[GlobalworkController::class,"show"])->name("globalworks.show")->middleware('CurrentExamine');
     Route::patch("/{question}/update/{examine?}",[GlobalworkController::class,"Update"])->name("globalworks.update");
     Route::post("/{course}/refresh",[QuestionController::class,"Refresh"])->name("globalworks.refresh");
-    Route::post("/{course}/join/{exam?}/{examine?}",[GlobalworkController::class,"Create"])->name("globalworks.create");
+    Route::post("/{course}/join/{examine?}",[GlobalworkController::class,"Create"])->name("globalworks.create");
 })->middleware("auth");
+
 
 Route::prefix("message")->group(function (){
     Route::get("/{globalworks}/show",[MessageController::class,'Show'])->name("message.show");

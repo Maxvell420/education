@@ -8,32 +8,33 @@ use Illuminate\Support\Collection;
 
 class GlobalworkService
 {
-    public function __construct(){
+    public Course $course;
+    public Question $question;
+    public ?int $examine;
+    public Collection $data;
+    public function __construct(Globalwork $globalwork)
+    {
+        $this->course=$globalwork->course()->first();
+        $this->question=$globalwork->question()->first();
+        $this->examine=$globalwork->examine_id;
+    }
+    public function GlobalworksGetData():Collection
+    {
 
+    }
+    private function getDownloads():?Downloads
+    {
+        return Downloads::where("question_id",$this->question->id)->first();
     }
     /*
          * if adding new data in the array, place it in end of return array
          * */
-    public function GlobalworkShowData(Course $course,int $question_id=0):Collection
+    public function GlobalworkShowData()
     {
-        $examine=User::find(auth()->user()->id)->currectExamine()->first("id");
-        if (!isset($examine->id)) {
-            $examine=null;
-        } else {
-            $examine = $examine->id;
-        }
-        $query=$course->globalworksGet($examine);
-        if ($question_id>0){
-            $globalworks=$query->where('question_id',$question_id)->first();
-            $question=$globalworks->question()->first();
-        } else {
-            $globalworks=$query->paginate(1);
-            $question=$globalworks->items()[0]->question()->first();
-        }
-        $file=Downloads::where("question_id",$question->id)->first();
-        return collect(['course'=>$course,'question'=>$question,'globalworks'=>$globalworks,'file'=>$file,'examine'=>$examine]);
+        $file=$this->getDownloads();
+        return $this->data=collect(['course'=>$this->course,'question'=>$this->question,'file'=>$file,'examine'=>$this->examine]);
     }
-    public function GlobalworkUpdate(AnswersRequest $request,Question $question,int $examine=null):bool
+    public function GlobalworkUpdate(AnswersRequest $request):bool
     {
         if ($request->answer == $question->correct_answer){
             $question->userAnswer($examine)->increment("num_attempts",1,
@@ -53,32 +54,4 @@ class GlobalworkService
             return false;
         }
     }
-    public function GlobalworkCreate(Course $course,Exam $exam=null,Examine $examine=null):void
-    {
-        $query=[];
-        if ($exam!= null and $examine !=null){
-            $questions = $course->questions()->get()->modelKeys();
-            $exams_questionsID = array_rand(array_flip($questions), $exam->questions_num);
-            foreach ($exams_questionsID as $exam_question) {
-                $query[] = ["question_id" => $exam_question,
-                    "course_id"=>$course->id,
-                    "user_id" => $examine->user_id,
-                    "examine_id" => $examine->id,
-                    "created_at" => now(),
-                    "updated_at" => now()];
-            }
-        }
-        else {
-            $table=$course->questions()->get();
-            session()->flash("message","You have successful joined course"." ".$course->courseName." "."there are questions of this course bellow");
-            foreach ($table as $entities)
-            {
-                $query[]=["question_id"=>$entities->id,
-                    "course_id"=>$entities->course_id,
-                    "user_id"=>auth()->id()];
-            }
-        }
-        Globalwork::insert($query);
-    }
-
 }

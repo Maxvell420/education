@@ -3,8 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\admincheck;
-use App\Http\Middleware\CurrectExamine;
-use App\Http\Middleware\ExamineExpire;
+use App\Http\Middleware\CurrentExamine;
 use App\Http\Middleware\IDcheck;
 use App\Http\Middleware\RequestFromBotValidating;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
@@ -71,8 +70,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         "admincheck"=>admincheck::class,
         "IDcheck"=>IDcheck::class,
-        "ExamineExpire"=>ExamineExpire::class,
-        "CurrentExamine"=>CurrectExamine::class,
+        "CurrentExamine"=>CurrentExamine::class,
         'botRequestCheck'=>RequestFromBotValidating::class,
         'client'=>CheckClientCredentials::class,
     ];

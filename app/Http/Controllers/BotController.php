@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Components\NgrokAPI;
+use App\Services\GlobalworkService;
 use Illuminate\Support\Facades\Auth;
 use Telegram\Bot\Keyboard\Keyboard;
-use App\Models\{Chain, Course, Question, Url, User};
+use App\Models\{Chain, Course, Globalwork, Question, Url, User};
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class BotController extends Controller
@@ -83,9 +84,10 @@ class BotController extends Controller
         dump($joined_courses);
     }
     public function test(){
-        $id = 2;
-        $question = Question::find($id);
-        $course=$question->course()->first();
-        dump($course);
-    }
+
+//        $GlobalworkService = new GlobalworkService($globalwork);
+//        $data =$GlobalworkService->GlobalworkShowData();
+        $data=collect([$globalwork->course()->first()]);
+        return $data;
+        }
 }

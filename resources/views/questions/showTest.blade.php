@@ -23,11 +23,11 @@
 total attempts for this question:{{$data['question']->total_attempts}}
 </div>
 <div>
-your attempts for this question:{{$data['globalwoks']->items()[0]->num_attempts}}
+your attempts for this question:{{$globalworks->items()[0]->num_attempts}}
 </div>
 @endif
 <div>
-    <form action="{{route("globalworks.update",[$data['question'],$data['examine']])}}" method="post">
+    <form action="{{route("globalworks.update",$globalworks->items()[0])}}" method="post">
     @csrf
     @method("patch")
         <div>
@@ -48,5 +48,5 @@ your attempts for this question:{{$data['globalwoks']->items()[0]->num_attempts}
     </div>
 @endif
 <div>
-    {{$data['globalworks']->links()}}
+    {{$globalworks->links()}}
 </div>
