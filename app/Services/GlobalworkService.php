@@ -8,10 +8,13 @@ use Illuminate\Support\Collection;
 
 class GlobalworkService
 {
+    public function __construct(){
+
+    }
     /*
          * if adding new data in the array, place it in end of return array
          * */
-    public function GlobalworkShowData(Course $course):Collection
+    public function GlobalworkShowData(Course $course,int $question_id=0):Collection
     {
         $examine=User::find(auth()->user()->id)->currectExamine()->first("id");
         if (!isset($examine->id)) {
@@ -19,8 +22,14 @@ class GlobalworkService
         } else {
             $examine = $examine->id;
         }
-        $globalworks=$course->globalworksGet($examine)->paginate(1);
-        $question=$globalworks->items()[0]->question()->first();
+        $query=$course->globalworksGet($examine);
+        if ($question_id>0){
+            $globalworks=$query->where('question_id',$question_id)->first();
+            $question=$globalworks->question()->first();
+        } else {
+            $globalworks=$query->paginate(1);
+            $question=$globalworks->items()[0]->question()->first();
+        }
         $file=Downloads::where("question_id",$question->id)->first();
         return collect(['course'=>$course,'question'=>$question,'globalworks'=>$globalworks,'file'=>$file,'examine'=>$examine]);
     }

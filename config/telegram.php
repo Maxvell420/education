@@ -128,7 +128,9 @@ return [
     'commands' => [
         \App\Components\Telegram\Commands\StartCommand::class,
         HelpCommand::class,
-        \App\Components\Telegram\Commands\AvailableCoursesCommand::class
+        \App\Components\Telegram\Commands\AvailableCoursesCommand::class,
+        \App\Components\Telegram\Commands\JoinedCoursesCommand::class,
+        \App\Components\Telegram\Commands\CourseShowCommand::class,
     ],
 
     /*

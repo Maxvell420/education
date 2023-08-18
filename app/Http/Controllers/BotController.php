@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Components\NgrokAPI;
 use Illuminate\Support\Facades\Auth;
 use Telegram\Bot\Keyboard\Keyboard;
-use App\Models\{Course, Url, User};
+use App\Models\{Chain, Course, Question, Url, User};
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class BotController extends Controller
@@ -13,14 +13,27 @@ class BotController extends Controller
     public function handle(){
         $update=Telegram::commandsHandler(true);
         if  ($update->isType('callback_query'))   {
-            switch ($update->callbackQuery->data){
-                case 'available':
-                    Telegram::triggerCommand('available courses',$update);
+            switch (substr($update->callbackQuery->data,0,1)==0){
+                case 0:
+                    if (substr($update->callbackQuery->data,1)==0) {
+                        Telegram::triggerCommand('availableCourses',$update);
+                    }
+                    elseif (substr($update->callbackQuery->data,1)==1) {
+                        Telegram::triggerCommand('joinedCourses',$update);
+                    }
+                    else {
+                        return response('not found',404);
+                    }
                     break;
-                case 'joined':
-                    Telegram::sendMessage(
-                        ['chat_id' => $update->callbackQuery->message->chat->id,
-                            'text' => 'it is newer for me']);
+                case 1:
+                    Telegram::triggerCommand('CourseShow',$update);
+                    break;
+                case 2:
+//                    'join course = 0' or 'question Show >1'
+                    break;
+                case 3:
+//                    'answers for question переделать вопросы чтобы были 4 варианта ответа и правильный вариант отдельная колонка ->
+//                    из-за этого надо переделывать все вопросы'
                     break;
             }
         }
@@ -70,24 +83,9 @@ class BotController extends Controller
         dump($joined_courses);
     }
     public function test(){
-        $user=User::where('telegram_id',1955425357)->first();
-        $joined_courses=Course::whereHas('globalworks',function ($query) use ($user)
-        {
-            $query->where('user_id',$user->id);
-        })->get();
-        $available_courses=Course::all()->diff($joined_courses)->where("course_complete","!=",null);
-        $buttons=[];
-        if ($available_courses->isNotEmpty()) {
-            foreach ($available_courses as $course) {
-                $buttons[] = Keyboard::inlineButton([['text' => $course->courseName, 'callback_data' => $course->id]]);
-            }
-        }
-        $reply_markup=Keyboard::make(
-            ['inline_keyboard'=>$buttons]);
-        Telegram::sendMessage([
-            'text' => 'bellow there are list of available courses for joining',
-            'chat_id'=>$user->telegram_id,
-            'reply_markup' => $reply_markup
-        ]);
+        $id = 2;
+        $question = Question::find($id);
+        $course=$question->course()->first();
+        dump($course);
     }
 }

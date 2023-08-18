@@ -16,7 +16,7 @@ class StartCommand extends Command
     public function handle()
     {
         $keyboard=[
-            Keyboard::inlineButton([['text'=>'available courses','callback_data'=>'available']]),
+            Keyboard::inlineButton([['text'=>'available courses','callback_data'=>'0:0']]),
         ];
         $telegram_user=$this->getUpdate()->getMessage()->from;
         switch ($user=User::where('name',$telegram_user->username)->first()){
@@ -27,7 +27,7 @@ class StartCommand extends Command
                     $query->where('user_id',$user->id);
                 })->get(['id','courseName']);
                 if ($joined_courses->isNotEmpty()) {
-                    $keyboard[] = Keyboard::inlineButton([['text' => 'joined courses','callback_data'=>'joined']]);
+                    $keyboard[] = Keyboard::inlineButton([['text' => 'joined courses','callback_data'=>'0:1']]);
                 }
                 break;
             case false:

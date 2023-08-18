@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('chains', function (Blueprint $table) {
             $table->id();
             $table->foreignId("user_id")->index()->constrained("users");
-            $table->string('command_1');
-            $table->string('command_2');
-            $table->string('command_3');
-            $table->string('command_4');
+            $table->string('command_1')->nullable();
+            $table->string('command_2')->nullable();
+            $table->string('command_3')->nullable();
+            $table->string('command_4')->nullable();
             $table->timestamps();
 
         });

@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\Models\Course;
-use App\Models\Globalwork;
 use App\Models\Question;
-use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 

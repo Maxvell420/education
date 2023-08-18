@@ -23,7 +23,7 @@ class AvailableCoursesCommand extends Command
         $buttons=[];
         if ($available_courses->isNotEmpty()) {
             foreach ($available_courses as $course){
-                $buttons[]=Keyboard::inlineButton([['text'=>$course->courseName,'callback_data'=>$course->id]]);
+                $buttons[]=Keyboard::inlineButton([['text'=>$course->courseName,'callback_data'=>'1:'.$course->id]]);
             }
         }
         $reply_markup=Keyboard::make(
