@@ -40,7 +40,7 @@ Route::get("admindashboard",[UsersController::class,"admindashboard"])->name("ad
 
 Route::prefix("globalworks")->group(function () {
     Route::get("/show/{course}",[GlobalworkController::class,"show"])->name("globalworks.show")->middleware('CurrentExamine');
-    Route::patch("/{question}/update/{examine?}",[GlobalworkController::class,"Update"])->name("globalworks.update");
+    Route::patch("/{globalwork}/update",[GlobalworkController::class,"Update"])->name("globalworks.update");
     Route::post("/{course}/refresh",[QuestionController::class,"Refresh"])->name("globalworks.refresh");
     Route::post("/{course}/join/{examine?}",[GlobalworkController::class,"Create"])->name("globalworks.create");
 })->middleware("auth");

@@ -14,9 +14,9 @@ class ExamineService
         $examine=$exam->examines()->create(["user_id"=>\auth()->user()->id,
             "examine_expires"=>$seconds=now()->addMinutes($exam->minutes_for_exam)]);
         event(new ExamineStartEvent($examine->id,$seconds->diffInSeconds()));
-        $globalworkController = new GlobalworkController();
         $questions=$this->examineQuestions($course,$exam);
-        $globalworkController->create($course,$examine,$questions);
+        $userService = new UserService(auth()->user()->id);
+        $userService->courseJoin($course,$examine,$questions);
     }
     public function examineQuestions(Course $course, Exam $exam ):Collection
     {

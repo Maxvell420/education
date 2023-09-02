@@ -18,11 +18,12 @@ return new class extends Migration
             $table->text("title");
             $table->text("question_type");
             $table->text("problem");
-            $table->text("correct_answer");
-            $table->text("incorrect_answer_1")->nullable();
-            $table->text("incorrect_answer_2")->nullable();
-            $table->text("incorrect_answer_3")->nullable();
-            $table->integer("total_attempts")->default(0);
+            $table->text("answer_1")->nullable();
+            $table->text("answer_2")->nullable();
+            $table->text("answer_3")->nullable();
+            $table->text("answer_4")->nullable();
+            $table->text('correct_answer');
+            $table->integer("num_attempts")->default(0);
             $table->timestamps();
         });
     }

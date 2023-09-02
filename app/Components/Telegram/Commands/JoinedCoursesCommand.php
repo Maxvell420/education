@@ -10,7 +10,7 @@ use Telegram\Bot\Laravel\Facades\Telegram;
 
 class JoinedCoursesCommand extends Command
 {
-    protected string $name = 'joinedCourses';
+    protected string $name = 'joined_courses';
     protected string $description = 'returns list of joined courses for user';
     public function Handle()
     {

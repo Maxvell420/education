@@ -18,7 +18,8 @@ class CourseFactory extends Factory
     public function definition(): array
     {
         return [
-            "courseName"=>fake()->word,
+            'courseName'=>fake()->word,
+            'course_info'=>fake()->text,
         ];
     }
 }

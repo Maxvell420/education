@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('chains', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("user_id")->index()->constrained("users");
-            $table->string('command_1')->nullable();
-            $table->string('command_2')->nullable();
-            $table->string('command_3')->nullable();
-            $table->string('command_4')->nullable();
+            $table->foreignId("user_id")->index()->unique()->constrained("users");
+            $table->boolean('admin')->default(false);
+            $table->foreignId('globalwork_id')->nullable()->constrained('globalworks');
+            $table->foreignId('course_id')->nullable()->constrained('courses');
+            $table->foreignId('question_id')->nullable()->constrained('questions');
             $table->timestamps();
-
         });
     }
 

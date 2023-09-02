@@ -18,6 +18,9 @@ class User extends Authenticatable
 //            event(new UserRegistrationEvent($model));
 //        });
 //    }
+    public function chain(){
+        return $this->hasOne(Chain::class);
+    }
     public function roles(){
         return $this->hasOne(Role::class);
     }

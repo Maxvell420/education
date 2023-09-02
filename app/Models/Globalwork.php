@@ -10,16 +10,24 @@ class Globalwork extends Model
 {
     protected $fillable=["examine_id","course_id","question_id","user_id","userAnswer","course_complete","courseName","num_attempts"];
     use HasFactory;
-    public function course() {
+    public function course()
+    {
         return $this->belongsTo(Course::class);
     }
-    public function question(){
+    public function question()
+    {
         return $this->belongsTo(Question::class);
     }
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
-    public function messages(){
+    public function messages()
+    {
         return $this->hasMany(Chat_message::class);
+    }
+    public function chain()
+    {
+        return $this->hasOne(Chain::class);
     }
 }

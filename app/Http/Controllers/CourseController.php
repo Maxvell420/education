@@ -14,25 +14,24 @@ class CourseController extends Controller
     }
     public function store(Request $request):RedirectResponse
     {
-        $course=new CourseService();
-        $course->courseStore($request);
+        Course::query()->create(["courseName" => $request->input("courseName")]);
         return redirect("admindashboard");
     }
     public function edit(Course $course):Renderable
     {
-        $edit=new CourseService();
-        $questions=$edit->courseEdit($course);
+        $edit=new CourseService($course);
+        $questions=$edit->courseEdit();
         return view("course.courseedit", ["course" => $course,"questions"=>$questions]);
     }
     public function show(Course $course):Renderable
     {
-        $courseService = new CourseService();
-        $data = $courseService->courseShow($course);
+        $courseService = new CourseService($course);
+        $data = $courseService->courseShow();
         return view("course.courseshow", ['data'=>$data]);
     }
     public function open(Course $course){
-        $courseService = new CourseService();
-        $courseService->courseOpen($course);
+        $courseService = new CourseService($course);
+        $courseService->courseOpen();
         return redirect()->route("course.show",$course);
     }
 }

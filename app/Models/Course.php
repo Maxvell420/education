@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Course extends Model
 {
@@ -15,10 +17,12 @@ class Course extends Model
     public function globalworks(){
         return $this->hasMany(Globalwork::class);
     }
-    public function courseRefresh(){
+    public function courseRefresh()
+    {
         return $this->globalworksGet()->delete();
     }
-    public function globalworksGet($id=null){
+    public function globalworksGet($id=null)
+    {
         $query=$this->globalworks()->where("user_id","=",auth()->user()->id)->where("examine_id",$id);
         return $query;
     }
@@ -27,5 +31,9 @@ class Course extends Model
     }
     public function exams(){
         return $this->hasMany(Exam::class);
+    }
+    public function getUsersGlobalworks(int $user_id, ?int $examine_id=null)
+    {
+        return $this->globalworks()->where("user_id",$user_id)->where("examine_id",$examine_id);
     }
 }

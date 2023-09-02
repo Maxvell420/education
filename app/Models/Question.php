@@ -19,8 +19,9 @@ class Question extends Model
     public function downloads(){
         return $this->hasOne(Downloads::class);
     }
-    public function userAnswer($id=null){
-        $query=$this->globalworks()->where("user_id",auth()->user()->id)->where("examine_id",$id);;
+    public function userAnswer(int $user_id,int $examine_id=null)
+    {
+        $query=$this->globalworks()->where("user_id",$user_id)->where("examine_id",$examine_id);;
         return $query;
     }
 

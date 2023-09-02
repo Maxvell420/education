@@ -4,6 +4,7 @@ namespace App\Components\Telegram\Commands;
 
 use App\Models\Course;
 use App\Models\User;
+use App\Services\BotService;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Keyboard\Keyboard;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -16,30 +17,29 @@ class StartCommand extends Command
     public function handle()
     {
         $keyboard=[
-            Keyboard::inlineButton([['text'=>'available courses','callback_data'=>'0:0']]),
+            Keyboard::Button([['text'=>'/available_courses']]),
         ];
-        $telegram_user=$this->getUpdate()->getMessage()->from;
-        switch ($user=User::where('name',$telegram_user->username)->first()){
+        $user=$this->getUpdate()->message->from;
+        $name = $user->username??$user->firstName;
+        switch (User::where('telegram_id',$user->id)->get()->isNotEmpty()){
             case true:
-                $text = 'You already started';
-                $joined_courses=Course::whereHas('globalworks',function ($query) use ($user)
-                {
-                    $query->where('user_id',$user->id);
-                })->get(['id','courseName']);
-                if ($joined_courses->isNotEmpty()) {
-                    $keyboard[] = Keyboard::inlineButton([['text' => 'joined courses','callback_data'=>'0:1']]);
+                $botService = new BotService($this->getUpdate());
+                if ($botService->joinedCourses()->isNotEmpty()){
+                    $keyboard[] = Keyboard::Button([['text' => '/joined_courses']]);
                 }
+                $text = 'You already started';
                 break;
             case false:
-                User::create(['name'=>$telegram_user->username,'telegram_id'=>$telegram_user->id]);
+                User::create(['name'=>$name, 'telegram_id'=>$user->id]);
                 $text='Hey, there! Welcome to our bot!';
                 break;
         }
         $reply_markup = Keyboard::make([
-            'inline_keyboard' =>$keyboard]);
+            'keyboard' =>$keyboard,
+            'is_persistent'=>true]);
         Telegram::sendMessage([
             'text' => $text,
-            'chat_id'=>$telegram_user->id,
+            'chat_id'=>$user->id,
             'reply_markup' => $reply_markup
         ]);
     }

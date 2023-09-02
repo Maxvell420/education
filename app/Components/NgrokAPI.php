@@ -12,7 +12,7 @@ class NgrokAPI
             // Base URI is used with relative requests
             'base_uri' => 'https://api.ngrok.com',
             // You can set any number of default request options.
-            'timeout'  => 3.0,
+            'timeout'  => 4.0,
             'verify' =>false,
         ]);
     }

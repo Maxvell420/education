@@ -27,7 +27,7 @@ your attempts for this question:{{$globalworks->items()[0]->num_attempts}}
 </div>
 @endif
 <div>
-    <form action="{{route("globalworks.update",$globalworks->items()[0])}}" method="post">
+    <form action="{{route("globalworks.update",[$globalworks->items()[0]])}}" method="post">
     @csrf
     @method("patch")
         <div>

@@ -130,7 +130,7 @@ return [
         HelpCommand::class,
         \App\Components\Telegram\Commands\AvailableCoursesCommand::class,
         \App\Components\Telegram\Commands\JoinedCoursesCommand::class,
-        \App\Components\Telegram\Commands\CourseShowCommand::class,
+        \App\Components\Telegram\Commands\ExitCommand::class,
     ],
 
     /*
