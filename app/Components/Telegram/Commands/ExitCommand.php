@@ -15,6 +15,5 @@ class ExitCommand extends Command
         $botService = new BotService($this->getUpdate());
         $botService->exitMode();
         $botService->sendMessage();
-        Telegram::triggerCommand('start',$this->getUpdate());
     }
 }

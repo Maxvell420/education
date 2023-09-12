@@ -40,17 +40,13 @@ class UserService
         if ($globalworks->isNotEmpty()) {
             return collect(['text'=>'You already have joined '. $course->courseName,'globalwork'=>$globalworks->first()->id]);
         }
-        $array=[];
         foreach ($questions as $question) {
-                $array[]= [
-                    'question_id'=>$question->id,
-                    'user_id' => $this->user->id,
-                    "course_id" => $course->id,
-                    "examine_id" => $examine?->id
-                ];
+            $globalworks[]=$question->globalworks()->create([
+                'user_id' => $this->user->id,
+                "course_id" => $course->id,
+                "examine_id" => $examine?->id,]);
         }
-        $globalworks=Globalwork::insert($array);
-        return collect(['text'=>'You have successful joined course'. ' ' . $course->courseName,'globalwork'=>$globalworks->first()]);
+        return collect(['text'=>'You have successful joined course'. ' ' . $course->courseName,'globalworks'=>$globalworks]);
     }
     public function GlobalworksCheck(Course $course)
     {

@@ -37,7 +37,9 @@ class GlobalworkService
         $param = $user_answer== $this->correct_answer ?
             [
                 "user_answer"=>"correct",
-                "answer_check"=>true]:
+                "answer_check"=>true
+            ]
+            :
             [
                 "user_answer" => 'incorrect',
                 "answer_check"=>false

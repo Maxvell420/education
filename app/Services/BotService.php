@@ -63,12 +63,21 @@ class BotService extends UserService
             }
         }
         if (str_starts_with($this->data, 'user')){
-            switch (substr($this->data,4)){
+            switch (substr($this->data,4)) {
                 case '/available_courses':
                     $this->availableCoursesRequest();
                     break;
                 case '/joined_courses':
                     $this->joinedCoursesRequest();
+                    break;
+                case (substr($this->data,4,12)=='/course_join'):
+                    $this->registerUserInCourse(Course::find(substr($this->data,17)));
+                    break;
+                case (substr($this->data,4,7)=='/course'):
+                    $this->showCourse(Course::find(substr($this->data,12)));
+                    break;
+                case (substr($this->data,4,11)=='/globalwork'):
+                    $this->getGlobalworkQuestionData(substr($this->data,16));
                     break;
             }
         }
@@ -76,9 +85,15 @@ class BotService extends UserService
     }
     private function messageHandle(Chain $chain=null):void
     {
+        $chain=$this->user->chain()->first();
         $message=$this->commandsHandle();
         if (!$message) {
-            //            Что-то про цепь
+            if ($chain!=null){
+                $globalworkService = new GlobalworkService(Globalwork::find($chain->globalwork_id));
+                $globalworkService->GlobalworkUpdate($this->update->message->text);
+                $this->user_answer_check($globalworkService->answerCheck(),$chain);
+                $this->sendMessage();
+            }
         }
     }
     private function commandsHandle():message|bool
@@ -91,6 +106,9 @@ class BotService extends UserService
     }
     private function MainMenu():void
     {
+        if ($this->user->chain()->first() !== null){
+            Telegram::triggerCommand('exit',$this->update);
+        }
         $this->buttons=[
             Keyboard::inlineButton([['text'=>'Доступные курсы','callback_data'=>'user/available_courses']]),
         ];
@@ -303,30 +321,28 @@ class BotService extends UserService
     private function showCourse(Course $course):void
     {
         $globalworks = $course->getUsersGlobalworks($this->user->id)->get();
-        if ($globalworks->isEmpty()){
+        if ($globalworks->isEmpty()) {
             $this->text = $course->course_info;
             $this->buttons[]=Keyboard::inlineButton([[
                 'text' => 'click this button for joining this course',
-                'callback_data'=>'2'.':'.$course->id]]);
-        }
-        else {
+                'callback_data'=>'user/course_join/'.$course->id]]);
+            $this->buttons[]=Keyboard::inlineButton([['text'=>'Вернуться назад','callback_data'=>'user/available_courses']]);
+        } else {
             $this->text = 'choose button bellow';
-            $this->buttons[]=Keyboard::inlineButton([[
-                'text' => 'question where you have stopped',
-                'callback_data'=>'3'.':'.$globalworks->where('answer_check','=',false)->min('id')]]);
-            $x=0;
+            $x=1;
                 foreach ($globalworks as $globalwork)
                     {
                         $this->buttons[]=Keyboard::inlineButton([[
                             'text' => $x++,
-                            'callback_data'=>'3'.':'.$globalwork->id]]);
+                            'callback_data'=>'user/globalwork/'.$globalwork->id]]);
                     }
-            }
+            $this->buttons[]=Keyboard::inlineButton([['text'=>'Вернуться назад','callback_data'=>'user/joined_courses']]);
+        }
         $this->keyboard=Keyboard::make(['inline_keyboard'=>$this->buttons])->inline();
     }
     public function sendMessage():Message
     {
-        if ($this->update->isType('callback_query')){
+        if ($this->update->isType('callback_query') and $this->keyboard->isInlineKeyboard()){
             return Telegram::editMessageReplyMarkup(
                 [
                     'chat_id'=>$this->user->telegram_id,
@@ -349,18 +365,21 @@ class BotService extends UserService
     private function registerUserInCourse(Course $course):void
     {
         $collection=$this->courseJoin($course);
-        $this->text = $collection['text']?
-            'You have successful joined course'. ' ' . $course->courseName:
-            'You already have joined '. $course->courseName;
-        $this->buttons[]=Keyboard::inlineButton([[
-            'text' => 'proceed joined course',
-            'callback_data'=>'3'.':'.$collection['globalwork']]]);
+        $this->text = 'You already have joined '. $course->courseName;
+        $x=1;
+        foreach ($collection['globalworks'] as $globalwork)
+        {
+            $this->buttons[]=Keyboard::inlineButton([[
+                'text' => $x++,
+                'callback_data'=>'user/globalwork/'.$globalwork->id]]);
+        }
+        $this->buttons[]=Keyboard::inlineButton([['text'=>'Вернуться назад','callback_data'=>'user/joined_courses']]);
         $this->keyboard=Keyboard::make(['inline_keyboard'=>$this->buttons])->inline();
 
     }
-    private function ChainCreate(Model $model):Chain
+    private function ChainCreate(User $user,Model $model):Chain|model
     {
-        $chain = $model->chain()->firstOrCreate(['user_id'=>$this->user->id],['user_id'=>$this->user->id,class_basename($model).'_id'=>$model->id]);
+        $chain = $user->chain()->updateOrCreate(['user_id'=>$user->id],[strtolower(class_basename($model)).'_id'=>$model->id]);
         if ($chain->wasRecentlyCreated){
             event(new ChainCreateEvent($this,$chain));
         }
@@ -369,15 +388,18 @@ class BotService extends UserService
     }
     public function exitMode()
     {
-        $this->user->chain()->delete();
-        $this->keyboard = Keyboard::remove(['remove_keyboard'=>true]);
-        $this->text='you have exited current mode';
+        $chain= $this->user->chain()->first();
+        if (!$chain->admin and $chain->globalwork_id!=null){
+            $this->text='Вы вышли из режима ответов на вопросы';
+        }
+        $chain->delete();
+        $this->keyboard = Keyboard::remove(['remove_keyboard'=>true]);;
     }
     private function getGlobalworkQuestionData(int $globalwork_id):void
     {
         $globalwork=Globalwork::find($globalwork_id);
         $globalworkService= new GlobalworkService($globalwork);
-        $this->ChainCreate($globalwork);
+        $this->ChainCreate($this->user,$globalwork);
         $question=$globalworkService->GlobalworkShowData()['question'];
         array_push($this->buttons,
             Keyboard::button([['text'=>$question->answer_4]]),
@@ -391,14 +413,15 @@ class BotService extends UserService
     private function user_answer_check(bool $flag, $chain):void
     {
         if ($flag) {
-            $this->sendMessage('Good job! Answer is correct, now sending to you next question');
+            $this->text='Правильный ответ';
+            $this->sendMessage();
             $globalwork=Globalwork::where('user_id',$this->user->id)->where('answer_check',false)->first();
             if ($globalwork!=null) {
                 $chain->update(['globalwork_id'=>$globalwork->id]);
                 $this->getGlobalworkQuestionData($chain->globalwork_id);
             }
             else {
-                $this->text = 'it seem you have completed this course, good job';
+                $this->text = 'Похоже что курс закончился, good JOB!';
                 Telegram::triggerCommand('exit',$this->update);
             }
         }

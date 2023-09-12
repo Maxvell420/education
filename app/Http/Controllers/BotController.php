@@ -18,7 +18,6 @@ class BotController extends Controller
     public function handle()
     {
         $update = Telegram::commandsHandler(true);
-
 //        Telegram::triggerCommand('start',$update);
         if (!isset($update->message->entities)) {
                 $bot = new BotService($update);
