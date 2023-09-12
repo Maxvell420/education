@@ -16,8 +16,16 @@ return new class extends Migration
             $table->foreignId("user_id")->index()->unique()->constrained("users");
             $table->boolean('admin')->default(false);
             $table->foreignId('globalwork_id')->nullable()->constrained('globalworks');
-            $table->foreignId('course_id')->nullable()->constrained('courses');
-            $table->foreignId('question_id')->nullable()->constrained('questions');
+            $table->text('course_id')->nullable()->constrained('courses');
+            $table->text('question_id')->nullable()->constrained('questions');
+            $table->text('variable_1')->nullable();
+            $table->text('variable_2')->nullable();
+            $table->text('variable_3')->nullable();
+            $table->text('variable_4')->nullable();
+            $table->text('variable_5')->nullable();
+            $table->text('variable_6')->nullable();
+            $table->text('variable_7')->nullable();
+            $table->text('variable_8')->nullable();
             $table->timestamps();
         });
     }

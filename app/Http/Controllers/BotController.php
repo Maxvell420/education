@@ -18,40 +18,28 @@ class BotController extends Controller
     public function handle()
     {
         $update = Telegram::commandsHandler(true);
-        $bot = new BotService($update);
-        $chain = $bot->user->chain()->first();
-        if ($chain!=null) {
-            if ($globalwork_id=$chain->globalwork_id??null) {
-                $globalworkService = new GlobalworkService(Globalwork::find($globalwork_id));
-                $globalworkService->GlobalworkUpdate($bot->user->id,$update->message->text);
-                $bot->user_answer_check($globalworkService->answerCheck(),$chain);
-                $bot->sendMessage();
-            }
+
+//        Telegram::triggerCommand('start',$update);
+        if (!isset($update->message->entities)) {
+                $bot = new BotService($update);
+                $bot->handle();
         }
-        if ($chain == null and $update->isType('message') and !isset($update->message->entities)){
-            $bot->unknown();
-            $bot->sendMessage();
-        }
-        if ($update->isType('callback_query')) {
-            switch (substr($update->callbackQuery->data, 0, 1)) {
-                case 1:
-                    $course = Course::find(substr($update->callbackQuery->data, 2));
-                    $bot->showCourse($course);
-                    break;
-                case 2:
-                    $course = Course::find(substr($update->callbackQuery->data, 2));
-                    $bot->registerUserInCourse($course);
-                    break;
-                case 3:
-                    $bot = new BotService($update);
-                    $bot->getGlobalworkQuestionData(substr($bot->data, 2));
-                    break;
-            }
-            $bot->sendMessage();
+        return response('OK', 200);
+    }
+    public function delete(Request $request)
+    {
+        $updates = Telegram::getUpdates();
+        foreach ($updates as $update) {
+            $bot = new BotService($update);
+//            $bot->sendMessage();
+            $bot->handle();
         }
         return response('OK', 200);
     }
 
+    public function test()
+    {
+    }
     public function getNgrokUri(): string
     {
         $import = new NgrokAPI();
@@ -93,48 +81,9 @@ class BotController extends Controller
         return Telegram::getUpdates();
     }
 
-    public function delete(Request $request)
+
+    public function react(Course $course)
     {
-        $updates = Telegram::getUpdates();
-        foreach ($updates as $update) {
-            Telegram::triggerCommand('start',$update);
-//            $bot = new BotService($update);
-//            $chain = $bot->user->chain()->first();
-//            if ($chain != null) {
-//                if ($globalwork_id = $chain->globalwork_id ?? null) {
-//                    $globalworkService = new GlobalworkService(Globalwork::find($globalwork_id));
-//                    $globalworkService->GlobalworkUpdate($bot->user->id, $update->message->text);
-//                    $bot->user_answer_check($globalworkService->answerCheck(), $chain);
-//                    $bot->sendMessage();
-//                }
-//            }
-//            if ($chain == null and $update->isType('message') and !isset($update->message->entities)) {
-//                $bot->unknown();
-//                $bot->sendMessage();
-//            }
-//            if ($update->isType('callback_query')) {
-//                switch (substr($update->callbackQuery->data, 0, 1)) {
-//                    case 1:
-//                        $course = Course::find(substr($update->callbackQuery->data, 2));
-//                        $bot->showCourse($course);
-//                        break;
-//                    case 2:
-//                        $course = Course::find(substr($update->callbackQuery->data, 2));
-//                        $bot->registerUserInCourse($course);
-//                        break;
-//                    case 3:
-//                        $bot = new BotService($update);
-//                        $bot->getGlobalworkQuestionData(substr($bot->data, 2));
-//                        break;
-//                }
-//                $bot->sendMessage();
-//            }
-//            Telegram::triggerCommand('start',$update);
-            return response('OK', 200);
-        }
-    }
-    public function test()
-    {
-        Telegram::deleteMessage(['chat_id'=>960717582,'message_id'=>1479]);
+        return $course->course_info;
     }
 }

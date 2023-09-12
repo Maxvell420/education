@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 class Course extends Model
 {
     use HasFactory;
-    protected $fillable=["courseName","course_complete"];
+    protected $fillable=["courseName","course_complete",'course_info'];
     public function questions(){
         return $this->hasMany(Question::class);
     }

@@ -21,7 +21,7 @@ class User extends Authenticatable
     public function chain(){
         return $this->hasOne(Chain::class);
     }
-    public function roles(){
+    public function role(){
         return $this->hasOne(Role::class);
     }
     public function globalworks() {

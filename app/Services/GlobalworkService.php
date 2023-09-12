@@ -32,7 +32,7 @@ class GlobalworkService
         $file=$this->getDownloads();
         return $this->data=collect(['course'=>$this->course,'question'=>$this->question,'file'=>$file,'examine'=>$this->examine]);
     }
-    public function GlobalworkUpdate(int $user_id,string $user_answer):void
+    public function GlobalworkUpdate(string $user_answer):void
     {
         $param = $user_answer== $this->correct_answer ?
             [

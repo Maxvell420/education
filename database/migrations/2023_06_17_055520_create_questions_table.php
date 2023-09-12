@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId("course_id")->index()->constrained("courses");
             $table->text("title");
-            $table->text("question_type");
+            $table->text("question_type")->default('writing');
             $table->text("problem");
             $table->text("answer_1")->nullable();
             $table->text("answer_2")->nullable();
