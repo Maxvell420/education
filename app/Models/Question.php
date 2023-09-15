@@ -8,8 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Question extends Model
 {
     protected $fillable=[
-        "course_id","problem","title","incorrect_answer_1","incorrect_answer_2","incorrect_answer_3","question_type","correct_answer","total_attempts"];
+        "course_id","problem","title","answer_1","answer_2","answer_3","question_type","answer_4","total_attempts",'correct_answer'];
     use HasFactory;
+    public function setCorrectAnswerAttribute($value)
+    {
+        $this->attributes['correct_answer']='answer_'.$value;
+    }
     public function globalworks() {
         return $this->hasMany(Globalwork::class);
     }

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Http\Requests\QuestionRequest;
 use App\Http\Requests\QuestionUpdateRequest;
 use App\Models\Course;
 use App\Models\Downloads;
@@ -11,16 +10,29 @@ use Illuminate\Http\Request;
 
 class QuestionService
 {
-    public function questionCreate(QuestionRequest $request,Course $course){
-        $question=$course->questions()->create($request->validated());
-        /*
-         * добавляет вопрос в таблицу questions, и ответы в таблицу answers с id равным максимальному id из таблицы questions
-         * */
-        if ($request->file("file")!==null) {
-            $this->filestore($request,$question);
-        }
+    private function requestValidate(Request $request)
+    {
+        return $request->validate([
+            "title"=>["required","min:3","max:30"],
+            "problem"=>["required","min:3","max:255"],
+            'answer_1'=>["required","min:3","max:100"],
+            'answer_2'=>["required","min:3","max:100"],
+            'answer_3'=>["required","min:3","max:100"],
+            'answer_4'=>["required","min:3","max:100"],
+            'correct_answer'=>['required','ends_with:1,2,3,4','size:1'],
+        ]);
     }
-    public function fileStore(Request $request,Question $question):void {
+    public function questionCreate(Request $request,Course $course)
+    {
+        $question=$course->questions()->find($request->question_id);
+        $question->update($this->requestValidate($request));
+        if ($request->file_id!=null) {
+            $question->downloads()->updateOrCreate(['question_id'=>$question->id],['file_id'=>$request->file_id,'course_id'=>$course->id]);
+        }
+        return $question;
+    }
+    public function fileStore(Request $request,Question $question):void
+    {
         $file=$request->file("file");
         $filenameOriginal=$request->file("file")->getClientOriginalName();
         $formatPointNum=strripos($filenameOriginal,".");
@@ -37,7 +49,6 @@ class QuestionService
             "path"=>$path,
             "original_name"=>$filenameOriginal,
             "given_name"=>$filename]);
-
     }
     public function questionUpdate(QuestionUpdateRequest $request,Question $question):string
     {

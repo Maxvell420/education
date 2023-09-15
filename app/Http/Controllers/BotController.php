@@ -7,7 +7,7 @@ use App\Components\NgrokAPI;
 use App\Http\Requests\AnswersRequest;
 use App\Services\BotService;
 use App\Services\GlobalworkService;
-use App\Models\{Chain, Course, Globalwork, Question, Url, User};
+use App\Models\{Chain, Course, Downloads, Globalwork, Question, Url, User};
 use Illuminate\Support\Facades\Request;
 use Telegram\Bot\Keyboard\Keyboard;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -30,6 +30,7 @@ class BotController extends Controller
         $updates = Telegram::getUpdates();
         foreach ($updates as $update) {
             $bot = new BotService($update);
+            Telegram::triggerCommand('menu',$update);
 //            $bot->sendMessage();
             $bot->handle();
         }
@@ -38,6 +39,7 @@ class BotController extends Controller
 
     public function test()
     {
+        Downloads::create(['question_id'=>3,'file_id'=>1235,'course_id'=>1]);
     }
     public function getNgrokUri(): string
     {
@@ -78,11 +80,5 @@ class BotController extends Controller
     public function getUpdates()
     {
         return Telegram::getUpdates();
-    }
-
-
-    public function react(Course $course)
-    {
-        return $course->course_info;
     }
 }

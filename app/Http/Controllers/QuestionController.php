@@ -20,7 +20,7 @@ class QuestionController extends Controller
     /**
      * Store a newly created Question and checks request on file existence
      */
-    public function store(QuestionRequest $request,Course $course):RedirectResponse
+    public function store($request,Course $course):RedirectResponse
     {
         $question=new QuestionService();
         $question->questionCreate($request,$course);

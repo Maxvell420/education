@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId("course_id")->index()->constrained("courses");
             $table->foreignId("question_id")->index()->constrained("questions");
             $table->text("original_name");
-            $table->text("given_name");
-            $table->text("path");
+            $table->text('file_id')->nullable();
+            $table->text("path")->nullable();
             $table->timestamps();
         });
     }
