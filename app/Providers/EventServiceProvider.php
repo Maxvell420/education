@@ -2,14 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\BotRebootEvent;
 use App\Events\ChainCreateEvent;
 use App\Events\ExamineStartEvent;
 use App\Events\UserRegistrationEvent;
 use App\Events\BotMessageEvent;
 use App\Listeners\BotMessageRegisterListener;
+use App\Listeners\BotRebootlistener;
 use App\Listeners\EnteringModeListener;
 use App\Listeners\ExamineCloseListener;
-use App\Listeners\SendNotesListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -20,10 +21,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        UserRegistrationEvent::class=>[SendNotesListener::class],
         ExamineStartEvent::class=>[ExamineCloseListener::class],
-        BotMessageEvent::class=>[BotMessageRegisterListener::class],
-        ChainCreateEvent::class=>[EnteringModeListener::class]
+        ChainCreateEvent::class=>[EnteringModeListener::class],
+        BotRebootEvent::class=>[BotRebootlistener::class],
     ];
     /**
      * Register any events for your application.

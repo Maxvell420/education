@@ -2,11 +2,14 @@
 
 namespace App\Services\botv2;
 
+use App\Events\BotRebootEvent;
 use App\Events\ChainCreateEvent;
+use App\Http\Controllers\BotControllerV2;
 use App\Models\Chain;
 use App\Models\Course;
 use App\Models\Globalwork;
 use App\Models\Question;
+use App\Models\Url;
 use App\Models\User;
 use App\Services\GlobalworkService;
 use App\Services\QuestionService;
@@ -23,8 +26,17 @@ class ReplyKeyboardResponse extends BotService
     {
         $chain = $this->user->chain()->first();
         try {
-//                Создание цепи для ответов на вопросы, создание и редактирования курсов/вопросов.
-//            substr($message,14); на редактирование
+            if ($message == 'reboot')
+            {
+                if ($this->user->role_id>1){
+                    $this->reboot();
+                    return true;
+                }
+            }
+            if (str_starts_with($message,'/course_open')) {
+                $this->courseOpen(Course::find(substr($message,12)));
+                return true;
+            }
             if ($message == '/course_create') {
                 $this->courseCreateOrUpdatePreparation();
                 return true;
@@ -66,6 +78,18 @@ class ReplyKeyboardResponse extends BotService
             return $this->text = $e->getMessage();
         }
         return false;
+    }
+    private function reboot()
+    {
+        BotControllerV2::removeWebhook();
+        sleep(2);
+        $uri = Url::first()->url;
+        Telegram::setWebhook(
+            ['url'=>$uri.'/api/rebootHandler',
+                'secret_token'=>env('TELEGRAM_BOT_SECRET')
+            ]);
+        event(new BotRebootEvent($this->user));
+        $this->text = 'Бот будет перезапущен через 15 секунд';
     }
     public function replyPreparation():array
     {
@@ -122,8 +146,9 @@ class ReplyKeyboardResponse extends BotService
         }
         return $this->text;
     }
+
     /**
-     * @param Course|null $course
+     * @param string|null $message
      * @return void
      * При создании курса в цепь в поле 'course_id' добавляется -1, при редактировании id курса.
      * После этого проверяется какое id у курса в цепи, и если id = -1, то отправляются инструкции по созданию курса, если любое число >0 ,
@@ -410,5 +435,10 @@ class ReplyKeyboardResponse extends BotService
         $request->headers->set('Accept','application/json');
         $request->headers->set('Content-Type','application/json');
         return $request;
+    }
+    private function courseOpen(Course $course):void
+    {
+        $course->update(['course_complete'=>true]);
+        $this->text='Курс был открыт для записи';
     }
 }

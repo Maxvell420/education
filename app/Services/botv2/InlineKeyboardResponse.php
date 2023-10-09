@@ -181,8 +181,11 @@ class InlineKeyboardResponse extends BotService
         ];
         if ($course->questions()->first()!=null) {
             $this->buttons[] = Keyboard::inlinebutton([['text' => 'Редактировать вопрос','callback_data'=>'/question_list'.$course->id]]);
+            if (!$course->course_complete){
+                $this->buttons[] = Keyboard::inlineButton([['text'=>'Открыть курс для вступления','callback_data'=>'/course_open'.$course->id]]);
+            }
         }
-        $this->buttons[]=Keyboard::inlineButton([['text'=>'Вернуться назад','callback_data'=>'/course_update'.$course->id]]);
+        $this->buttons[]=Keyboard::inlineButton([['text'=>'Вернуться назад','callback_data'=>'/courses']]);
         $this->keyboard=Keyboard::make(['inline_keyboard'=>$this->buttons])->inline();
         $this->text='Выбери из действий ниже';
     }

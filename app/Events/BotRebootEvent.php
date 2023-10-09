@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -18,10 +19,10 @@ class BotRebootEvent
     /**
      * Create a new event instance.
      */
-    public Update $update;
-    public function __construct(Update $update)
+    public User $user;
+    public function __construct(User $user)
     {
-
+        $this->user = $user;
     }
 
     /**

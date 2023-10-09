@@ -22,6 +22,6 @@ class BotRebootlistener
      */
     public function handle(BotRebootEvent $event): void
     {
-        BotUpJob::dispatch($event->update)->delay(10);
+        BotUpJob::dispatch($event->user)->delay(10);
     }
 }

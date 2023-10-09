@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Components\NgrokAPI;
 
+use App\Events\BotRebootEvent;
 use App\Http\Requests\AnswersRequest;
 use App\Services\BotService;
 use App\Services\botv2\CallbackQueryHandler;
@@ -91,5 +92,8 @@ class BotController extends Controller
         return Telegram::getUpdates();
     }
     public function check(){
+        $user = User::find(18);
+        event(new BotRebootEvent($user));
+
     }
 }

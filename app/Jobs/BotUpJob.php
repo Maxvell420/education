@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\BotControllerV2;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,10 +20,10 @@ class BotUpJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    private Update $update;
-    public function __construct(Update $update)
+    private User $user;
+    public function __construct(User $user)
     {
-        //
+        $this->user = $user;
     }
 
     /**
@@ -31,9 +32,11 @@ class BotUpJob implements ShouldQueue
     public function handle(): void
     {
         BotControllerV2::removeWebhook();
+        sleep(2);
         BotControllerV2::setUpWebHook();
+        sleep(2);
         Telegram::sendMessage(
-            ['chat_id'=>$this->update->message->from->id,
+            ['chat_id'=>$this->user->telegram_id,
                 'text'=>'Бот был перезапущен'
             ]);
     }

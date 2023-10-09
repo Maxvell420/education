@@ -38,18 +38,7 @@ class BotControllerV2 extends Controller
         }
         return response('OK', 200);
     }
-    public function reboot(Update $update)
-    {
-        $this->removeWebhook();
-        $uri = Url::first()->url;
-        Telegram::setWebhook(
-            ['url'=>$uri.'/api/rebootHandler',
-            'secret_token'=>env('TELEGRAM_BOT_SECRET')
-            ]);
-        event(new BotRebootEvent($update));
-        return response('OK', 200);
-    }
-    private function rebootHandler():Response
+    public function rebootHandler():Response
     {
         Telegram::commandsHandler(true);
         return response('OK', 200);
