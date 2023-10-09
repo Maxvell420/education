@@ -28,7 +28,7 @@ class GlobalworkController extends Controller
     public function Update(Request $request,Globalwork $globalwork):RedirectResponse
     {
         $Globalwork = new GlobalworkService($globalwork);
-        $Globalwork->GlobalworkUpdate($request->get('answer'));
+        $Globalwork->GlobalworkUpdate($request->input('answer'));
         if ($globalwork->answer_check) {
             return Redirect::back()->with("message","Good job! you may proceed");
         }

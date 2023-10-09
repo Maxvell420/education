@@ -12,8 +12,6 @@ class ExitCommand extends Command
     protected string $description = 'deteles Chain and exit current mode';
     public function handle(): void
     {
-        $botService = new BotService($this->getUpdate());
-        $botService->exitMode();
-        $botService->sendMessage();
+
     }
 }

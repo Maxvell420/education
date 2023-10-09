@@ -28,11 +28,7 @@ class CourseService
 //    Переделать методы с использованием свойств класса
     {
         $exams=$this->course->exams()->get();
-        $courseQuestions=$this->course->questions();
         $usersQuestions=$this->course->globalworksGet()->get()->count();
-        if ($usersQuestions!=$courseQuestions->count() and $usersQuestions>0) {
-            session()->flash("refresh","since you joined course"." ".$this->course->courseName." "."was updated, there is button bellow to update it for you");
-        }
         return collect(["course"=>$this->course,'questions'=>$usersQuestions,'exams'=>$exams]);
     }
     public function courseOpen():void

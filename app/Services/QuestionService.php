@@ -22,10 +22,11 @@ class QuestionService
             'correct_answer'=>['required','ends_with:1,2,3,4','size:1'],
         ]);
     }
-    public function questionCreate(Request $request,Course $course)
+    public function questionCreate(Request $request,Course $course): \Illuminate\Database\Eloquent\Model
     {
         $question=$course->questions()->find($request->question_id);
-        $question->update($this->requestValidate($request));
+        $question=$course->questions()->updateOrCreate(['id'=>$question->id??-1],$this->requestValidate($request));
+//        $question->update($this->requestValidate($request));
         if ($request->file_id!=null) {
             $question->downloads()->updateOrCreate(['question_id'=>$question->id],['file_id'=>$request->file_id,'course_id'=>$course->id]);
         }

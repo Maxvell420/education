@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\BotControllerV2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BotController;
-use Telegram\Bot\Laravel\Facades\Telegram;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,10 +21,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 //Route::middleware('auth:api')->get("/bot",[BotController::class,"getMe"]);
 Route::get('setUpWebHook',[BotController::class,'setUpWebHook'])->name("bot.setUpWebHook");
-Route::middleware(['botRequestCheck','client'])->post('',[BotController::class,'handle']);
+//Route::middleware(['botRequestCheck','client'])->post('',[BotController::class,'handle']);
+Route::middleware(['botRequestCheck','client'])->post('',[BotControllerV2::class,'handle']);
+Route::middleware(['botRequestCheck','client'])->post('rebootHandler',[BotControllerV2::class,'rebootHandler']);
 
 Route::get('removeWebhook',[BotController::class,'removeWebhook']);
 Route::get('getMe',[BotController::class,'getMe']);
 Route::get('getUpdates',[BotController::class,'getUpdates']);
 Route::middleware('botRequestCheck','client')->get('test',[BotController::class,'test']);
 Route::get('delete',[BotController::class,'delete']);
+Route::get('check',[BotController::class,'check']);

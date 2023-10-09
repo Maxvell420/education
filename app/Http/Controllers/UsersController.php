@@ -84,11 +84,10 @@ class UsersController extends Controller
         if (Auth::attempt($credentials)) {
             /*после успешной попытки создается авторизация и идет проверка пользователя на роль Админ/юзер
             по столбцу БД*/
+            $request->session()->regenerate();
             if (auth()->user()->role_id >1) {
-                $request->session()->regenerate();
                 return redirect()->intended('admindashboard');
             }
-            $request->session()->regenerate();
             return redirect()->intended('dashboard');
             /*Добавить страницу для простых пользователей*/
         }

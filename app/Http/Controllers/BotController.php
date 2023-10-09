@@ -6,6 +6,8 @@ use App\Components\NgrokAPI;
 
 use App\Http\Requests\AnswersRequest;
 use App\Services\BotService;
+use App\Services\botv2\CallbackQueryHandler;
+use App\Services\botv2\MessageHandler;
 use App\Services\GlobalworkService;
 use App\Models\{Chain, Course, Downloads, Globalwork, Question, Url, User};
 use Illuminate\Support\Facades\Request;
@@ -18,28 +20,35 @@ class BotController extends Controller
     public function handle()
     {
         $update = Telegram::commandsHandler(true);
-//        Telegram::triggerCommand('start',$update);
         if (!isset($update->message->entities)) {
                 $bot = new BotService($update);
                 $bot->handle();
         }
         return response('OK', 200);
     }
-    public function delete(Request $request)
-    {
-        $updates = Telegram::getUpdates();
-        foreach ($updates as $update) {
-            $bot = new BotService($update);
-            Telegram::triggerCommand('menu',$update);
-//            $bot->sendMessage();
-            $bot->handle();
-        }
-        return response('OK', 200);
-    }
-
     public function test()
     {
-        Downloads::create(['question_id'=>3,'file_id'=>1235,'course_id'=>1]);
+       $updates = Telegram::getUpdates();
+       foreach ($updates as $update){
+           if ($update->isType('callback_query')) {
+               $handler = new CallbackQueryHandler();
+               $data = $handler->handle($update);
+               if (isset($data['reply_markup'])){
+                   if ($data['reply_markup']->isInlineKeyboard()){
+                       $handler->sendReply($data);
+                       break;
+                   }
+               }
+                   $message = new MessageHandler();
+                   $message->sendReply($data);
+           }
+           elseif ($update->isType('message')) {
+               $handler = new MessageHandler();
+               $data = $handler->handle($update);
+               $handler->sendReply($data);
+           }
+      }
+        return response('OK', 200);
     }
     public function getNgrokUri(): string
     {
@@ -53,7 +62,7 @@ class BotController extends Controller
             $response = $key[0]['public_url'];
             break;
         }
-        Url::updateOrCreate(['url' => $response]);
+        Url::updateOrCreate(['url' => $response],['url' => $response]);
         return $response;
     }
 
@@ -80,5 +89,7 @@ class BotController extends Controller
     public function getUpdates()
     {
         return Telegram::getUpdates();
+    }
+    public function check(){
     }
 }

@@ -33,10 +33,10 @@ your attempts for this question:{{$globalworks->items()[0]->num_attempts}}
         <div>
             <select name="answer">
                 <option selected disabled> choose answer</option>
-                <option value="{{$data['question']["correct_answer"]}}"> {{$data['question']["correct_answer"]}} </option>
-                <option value="{{$data['question']["incorrect_answer_1"]}}"> {{$data['question']["incorrect_answer_1"]}}</option>
-                <option value="{{$data['question']["incorrect_answer_2"]}} "> {{$data['question']["incorrect_answer_2"]}}</option>
-                <option value="{{$data['question']["incorrect_answer_3"]}} ">{{$data['question']["incorrect_answer_3"]}} </option>
+                <option> {{$data['question']["answer_1"]}} </option>
+                <option> {{$data['question']["answer_2"]}}</option>
+                <option> {{$data['question']["answer_3"]}}</option>
+                <option> {{$data['question']["answer_4"]}} </option>
             </select>
         </div>
             <button type="submit"> submit </button>

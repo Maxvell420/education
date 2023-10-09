@@ -2,7 +2,10 @@
 
 namespace App\Components\Telegram\Commands;
 
+use App\Models\User;
 use App\Services\BotService;
+use App\Services\botv2\MessageHandler;
+use App\Services\botv2\UserMessageHandler;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -12,7 +15,8 @@ class MenuCommand extends Command
     protected string $description = 'Присылает главное меню';
     public function handle(): void
     {
-        $botService = new BotService($this->getUpdate());
-        $botService->handle();
+        $update = $this->update;
+        $request = new MessageHandler();
+        $request->handle($update);
     }
 }

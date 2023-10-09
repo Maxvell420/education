@@ -367,7 +367,6 @@ class BotService extends UserService
                 $this->text='Номер правильного варианта был сохранен';
             }
             else $this->text='Все данные для создания вопроса уже есть';
-
         }
         if (isset($this->update->message->photo)) {
             foreach ($this->update->message->photo as $photo){
@@ -471,6 +470,7 @@ class BotService extends UserService
             $this->exitMode($chain);
             return null;
         }
+//        отработает ли try catch если при создании курса отправить сообщение сохранить курс?
         if ($message=='редактировать') {
             $this->text='Что именно вы хотите редактировать?';
             $this->buttons=[
@@ -555,7 +555,6 @@ class BotService extends UserService
         }
         $this->buttons[]=Keyboard::inlineButton([['text'=>'Вернуться назад','callback_data'=>'user/joined_courses']]);
         $this->keyboard=Keyboard::make(['inline_keyboard'=>$this->buttons])->inline();
-
     }
     private function ChainCreate(User $user,Model $model=null):Chain|model
     {
