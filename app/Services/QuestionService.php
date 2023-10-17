@@ -27,7 +27,7 @@ class QuestionService
         if ($question) {
             foreach ($rules as $rule => $value) {
                 if ($request->$rule){
-                    $update[]=$rule;
+                    $update[$rule]=$value;
                 }
             }
         } else {
@@ -40,7 +40,8 @@ class QuestionService
     }
     public function questionCreate(Request $request,Course $course): \Illuminate\Database\Eloquent\Model
     {
-        $question=$course->questions()->create($this->requestValidate($request));
+        $data = $this->requestValidate($request);
+        $question=$course->questions()->create($data);
         if ($request->file){
             $this->fileStore($request->file,$question);
         }
@@ -76,7 +77,8 @@ class QuestionService
     }
     public function questionUpdate(Request $request,Question $question):Question
     {
-        $question->update($this->requestValidate($request,$question));
+        $data =$this->requestValidate($request,$question);
+        $question->update($data);
         return $question;
     }
     public function fileUpdate(Request $request, Question $question):void

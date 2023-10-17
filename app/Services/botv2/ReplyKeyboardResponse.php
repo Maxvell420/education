@@ -329,20 +329,20 @@ class ReplyKeyboardResponse extends BotService
                 $this->questionChainCheck($chain);
                 return null;
             case 'Редактировать':
-                $this->chainQuestionEditMenu($chain);
+                $this->chainQuestionEditMenu();
                 break;
-            case 'Тему вопроса':
-                $chain->update(['variable_1'=>null]);
-                break;
-            case 'Удалить вопрос' and $chain->question_id>0:
-                $question = $chain->Question()->first();
-                $this->keyboard = Keyboard::remove(['remove_keyboard' => true,]);
-                $chain->delete();
-                $this->keyboard = Keyboard::remove(['remove_keyboard' => true,]);
-                $service = new QuestionService();
-                $service->questionDelete($question);
-                $this->text = 'Вопрос был удален';
-                break;
+            case ('Удалить вопрос'):
+                if ($chain->question_id>0) {
+                    $question = $chain->Question()->first();
+                    $this->keyboard = Keyboard::remove(['remove_keyboard' => true,]);
+                    $chain->delete();
+                    $this->keyboard = Keyboard::remove(['remove_keyboard' => true,]);
+                    $service = new QuestionService();
+                    $service->questionDelete($question);
+                    $this->text = 'Вопрос был удален';
+                    return null;
+                }
+                return null;
             case 'Сохранить вопрос в курс':
                 $request=$this->chainQuestionRequest($chain);
                 $service = new QuestionService();
@@ -369,8 +369,12 @@ class ReplyKeyboardResponse extends BotService
                     $this->text='Изменения вопроса сохранены';
                     $this->keyboard = Keyboard::remove(['remove_keyboard' => true,]);
                     $chain->delete();
+                    return null;
                 }
-                return null;
+                break;
+            case 'Тему вопроса':
+                $chain->update(['variable_1'=>null]);
+                break;
             case 'Проблему вопроса':
                 $chain->update(['variable_2'=>null]);
                 break;
