@@ -5,13 +5,9 @@ use App\Http\Controllers\{UsersController,QuestionController,BotController,Cours
     ExamController, ExamineController,MessageController,GlobalworkController};
 
 
-Route::get("notification", function () {return view("notifications");});
-
 Route::get("users/registration",[UsersController::class,"create"])->name("users/create");
-
-
 Route::get("",[UsersController::class,"login"])->name("login");
-
+Route::get('projInfo',[UsersController::class,'projInfo'])->name('projInfo');
 
 Route::prefix("course")->group(function (){
     Route::get("/create",[CourseController::class,"create"])->name("course.create")->middleware("admincheck");
@@ -44,14 +40,6 @@ Route::prefix("globalworks")->group(function () {
     Route::post("/{course}/refresh",[QuestionController::class,"Refresh"])->name("globalworks.refresh");
     Route::post("/{course}/join/{examine?}",[GlobalworkController::class,"Create"])->name("globalworks.create");
 })->middleware("auth");
-
-
-Route::prefix("message")->group(function (){
-    Route::get("/{globalworks}/show",[MessageController::class,'Show'])->name("message.show");
-    Route::get("/{globalworks}/error",[MessageController::class,'Error'])->name("message.error");
-    Route::post("/{globalworks}/store",[MessageController::class,'Store'])->name("message.store");
-    Route::get("/chats",[UsersController::class,"chats"])->name('chats');
-});
 
 Route::prefix("questions")->group(function (){
     Route::post("questions/store/{course}",[QuestionController::class,"store"])->name('questions/store');

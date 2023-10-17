@@ -53,6 +53,7 @@ class BotController extends Controller
     }
     public function getNgrokUri(): string
     {
+        $url = Url::first();
         $import = new NgrokAPI();
         $response = $import->client->request('GET', '/tunnels',
             ['headers' => [
@@ -63,7 +64,9 @@ class BotController extends Controller
             $response = $key[0]['public_url'];
             break;
         }
-        Url::updateOrCreate(['url' => $response],['url' => $response]);
+        if ($url->url != $response){
+            $url->update(['url'=>$response]);
+        }
         return $response;
     }
 
@@ -90,10 +93,5 @@ class BotController extends Controller
     public function getUpdates()
     {
         return Telegram::getUpdates();
-    }
-    public function check(){
-        $user = User::find(18);
-        event(new BotRebootEvent($user));
-
     }
 }

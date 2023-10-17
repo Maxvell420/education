@@ -6,6 +6,7 @@ use App\Events\ChainCreateEvent;
 use App\Models\Chain;
 use App\Models\Course;
 use App\Models\Globalwork;
+use App\Models\Question;
 use App\Models\User;
 use App\Services\GlobalworkService;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,13 @@ class InlineKeyboardResponse extends BotService
     {
         try {
             switch ($message){
+                case str_starts_with($message,'/question_edit'):
+                    $question = Question::find(substr($message,14));
+                    if ($question==null){
+                        $this->MainMenu();
+                        return true;
+                    }
+                    return false;
                 case '/available_courses':
                     $this->availableCoursesRequest();
                     return true;
@@ -36,7 +44,7 @@ class InlineKeyboardResponse extends BotService
                     $this->questionEditList(Course::find(substr($message,14)));
                     return true;
                 case str_starts_with($message, '/course_join'):
-                    $this->registerUserInCourse(Course::find(substr($message,13)));
+                    $this->registerUserInCourse(Course::find(substr($message,12)));
                     return true;
                 case (str_starts_with($message,'course')):
                     $this->showCourse(Course::find(substr($message,6)));
@@ -158,7 +166,7 @@ class InlineKeyboardResponse extends BotService
     {
         $this->text='Выберите из опций ниже';
         $this->buttons=[
-            Keyboard::inlineButton([['text'=>'Создать курс','callback_data'=>'/course_create']]),
+            Keyboard::inlineButton([['text'=>'Создать курс','callback_data'=>'/course_crea']]),
             Keyboard::inlineButton([['text'=>'Редактировать курс','callback_data'=>'/courses']]),
             Keyboard::inlineButton([['text'=>'Вернуться назад','callback_data'=>'/menu']])
         ];

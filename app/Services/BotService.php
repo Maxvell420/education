@@ -581,7 +581,7 @@ class BotService extends UserService
         $globalwork=Globalwork::find($globalwork_id);
         $globalworkService= new GlobalworkService($globalwork);
         $this->ChainCreate($this->user,$globalwork);
-        $question=$globalworkService->GlobalworkShowData()['question'];
+        $question=$globalworkService->GlobalworkShowData()['Название'];
         $photo=$question->downloads()->first();
         if ($photo!=null) {
             Telegram::sendPhoto(['chat_id'=>$this->user->telegram_id,'photo'=>$photo->file_id]);

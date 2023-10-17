@@ -35,6 +35,6 @@ class MessageService
         $user=$globalworks->user()->first();
         $course=$globalworks->course()->first();
         $question=$globalworks->question()->first();
-        return collect(["chat"=>$chat,"user"=>$user,"globalworks"=>$globalworks,"course"=>$course,"question"=>$question]);
+        return collect(["chat"=>$chat,"user"=>$user,"globalworks"=>$globalworks,"course"=>$course,"Название"=>$question]);
     }
 }

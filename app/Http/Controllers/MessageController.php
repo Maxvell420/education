@@ -19,7 +19,7 @@ class MessageController extends Controller
     }
     public function Error(Question $question,Globalwork $globalworks):Renderable
     {
-        return view("questions.messagesForm",["question"=>$question,"globalworks"=>$globalworks]);
+        return view("questions.messagesForm",["Название"=>$question,"globalworks"=>$globalworks]);
     }
     public function Show(Globalwork $globalworks){
         $messageService = new MessageService();

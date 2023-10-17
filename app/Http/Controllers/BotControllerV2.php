@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Services\botv2\CallbackQueryHandler;
 use App\Services\botv2\InlineKeyboardResponse;
 use App\Services\botv2\MessageHandler;
-use App\Services\botv2\UserMessageHandler;
 use Illuminate\Http\Response;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;

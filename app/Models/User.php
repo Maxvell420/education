@@ -25,4 +25,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Examine::class);
     }
+    public function currectExamine()
+    {
+        return $this->examines()->where('examine_closure',false);
+    }
 }

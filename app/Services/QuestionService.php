@@ -2,71 +2,104 @@
 
 namespace App\Services;
 
-use App\Http\Requests\QuestionUpdateRequest;
 use App\Models\Course;
 use App\Models\Downloads;
 use App\Models\Question;
+use App\Models\Url;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class QuestionService
 {
-    private function requestValidate(Request $request)
+    private function requestValidate(Request $request,Question $question=null)
     {
-        return $request->validate([
-            "title"=>["required","min:3","max:30"],
-            "problem"=>["required","min:3","max:255"],
-            'answer_1'=>["required","min:3","max:100"],
-            'answer_2'=>["required","min:3","max:100"],
-            'answer_3'=>["required","min:3","max:100"],
-            'answer_4'=>["required","min:3","max:100"],
-            'correct_answer'=>['required','ends_with:1,2,3,4','size:1'],
-        ]);
+        $rules = [
+            "title"=>["min:3","max:30"],
+            "problem"=>["min:3","max:255"],
+            'answer_1'=>["min:3","max:100"],
+            'answer_2'=>["min:3","max:100"],
+            'answer_3'=>["min:3","max:100"],
+            'answer_4'=>["min:3","max:100"],
+            'correct_answer'=>['ends_with:1,2,3,4','size:1'],
+        ];
+        $update = [];
+        if ($question) {
+            foreach ($rules as $rule => $value) {
+                if ($request->$rule){
+                    $update[]=$rule;
+                }
+            }
+        } else {
+            foreach ($rules as $rule => $value) {
+                $value[]='required';
+                $update[$rule]=$value;
+            }
+        }
+        return $request->validate($update);
     }
     public function questionCreate(Request $request,Course $course): \Illuminate\Database\Eloquent\Model
     {
-        $question=$course->questions()->find($request->question_id);
-        $question=$course->questions()->updateOrCreate(['id'=>$question->id??-1],$this->requestValidate($request));
-//        $question->update($this->requestValidate($request));
-        if ($request->file_id!=null) {
-            $question->downloads()->updateOrCreate(['question_id'=>$question->id],['file_id'=>$request->file_id,'course_id'=>$course->id]);
+        $question=$course->questions()->create($this->requestValidate($request));
+        if ($request->file){
+            $this->fileStore($request->file,$question);
         }
         return $question;
     }
-    public function fileStore(Request $request,Question $question):void
+    private function telegram_store(Downloads $download):string
     {
-        $file=$request->file("file");
-        $filenameOriginal=$request->file("file")->getClientOriginalName();
-        $formatPointNum=strripos($filenameOriginal,".");
-        $formatLenghtNum=strlen($filenameOriginal);
-        $formatNum=$formatLenghtNum-$formatPointNum;
-        $format=mb_substr($filenameOriginal,-$formatNum,$formatNum);
-        $course=$question->course()->first();
-        $filename=$course->courseName."-".$question->title.$format;
-        $path=$course->courseName."/".$question->title;
-        $file->storeAs("questionStorage",$filename);
-        $file->move(public_path($path),$filename);
-        Downloads::query()->Create(["question_id"=>$question->id,
-            "course_id"=>$course->id,
-            "path"=>$path,
-            "original_name"=>$filenameOriginal,
-            "given_name"=>$filename]);
+        $url = Url::first();
+        $update = Telegram::sendPhoto(['chat_id'=>1955425357,'photo'=>\Telegram\Bot\FileUpload\InputFile::create($url->url.'/'.$download->path.'/'.$download->original_name)]);
+        foreach ($update->photo as $file) {
+            $file_id = $file->file_id;
+            break;
+        }
+        return $file_id;
     }
-    public function questionUpdate(QuestionUpdateRequest $request,Question $question):string
+    private function download_file_id(Downloads $download,string $file_id):void
     {
-        if ($question->downloads()->first() !== null) {
-            $file=$question->downloads()->first();
-            $file->delete();
-            if (file_exists(public_path($file->path.'/'.$file->given_name)))
-            {
-                unlink(public_path($file->path.'/'.$file->given_name));
-            }
+        $download->update(['file_id'=>$file_id]);
+    }
+    public function fileStore(UploadedFile $file,Question $question):void
+    {
+        $filenameOriginal='Название:'.$question->title.'.jpg';
+        $course=$question->course()->first();
+        $string=$course->courseName."/".$question->title;
+        $path = str_replace(' ', '', $string);
+        $file->storeAs("questionStorage");
+        $file->move(public_path($path),$filenameOriginal);
+        $download = $question->downloads()->create(["course_id"=>$course->id,
+            "path"=>$path,
+            "original_name"=>$filenameOriginal]);
+        $file_id = $this->telegram_store($download);
+        $this->download_file_id($download,$file_id);
+    }
+    public function questionUpdate(Request $request,Question $question):Question
+    {
+        $question->update($this->requestValidate($request,$question));
+        return $question;
+    }
+    public function fileUpdate(Request $request, Question $question):void
+    {
+        $download = $question->downloads()->first();
+        if ($download) {
+            $this->fileDelete($download);
         }
-        if ($request->file('file'))
-        {
-            $this->fileStore($request,$question);
+         $this->fileStore($request->file,$question);
+    }
+    public function fileDelete(Downloads $download):void
+    {
+        unlink($download->path.'/'.$download->original_name);
+        rmdir($download->path);
+        $download->delete();
+    }
+    public function questionDelete(Question $question):void
+    {
+        $download = $question->downloads()->first();
+        if ($download) {
+            $this->fileDelete($download);
         }
-        $question->update($request->validated());
-        /* Удаляет картинку к вопросу из папки public*/
-        return 'question was updated with success';
+        $question->delete();
+
     }
 }

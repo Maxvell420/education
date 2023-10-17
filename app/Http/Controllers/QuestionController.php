@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\{QuestionRequest,QuestionUpdateRequest};
 use App\Models\{Course,Question};
 use App\Services\QuestionService;
-use Illuminate\{Contracts\Support\Renderable,Http\RedirectResponse};
+use Illuminate\{Contracts\Support\Renderable, Http\RedirectResponse, Http\Request};
 
 class QuestionController extends Controller
 {
@@ -20,7 +19,7 @@ class QuestionController extends Controller
     /**
      * Store a newly created Question and checks request on file existence
      */
-    public function store($request,Course $course):RedirectResponse
+    public function store(Request $request,Course $course):RedirectResponse
     {
         $question=new QuestionService();
         $question->questionCreate($request,$course);
@@ -36,16 +35,14 @@ class QuestionController extends Controller
         $file=$question->downloads()->first();
         return view("questions.edit",["question"=>$question,"file"=>$file]);
     }
-    /*
-     метод update:
-     Проверяет наличие файла в папке public, затем если старый файл существует то удаляет его; При наличии файла в запросе загружает его,
-    удаляя старую запись о файле и сохраняя новый файл через метод filestore (см.выше) и затем обновляет в бд ответы на вопрос.
-     */
 
-    public function update(QuestionUpdateRequest $request,Question $question)
+    public function update(Request $request,Question $question)
     {
         $update= new QuestionService();
-        $update->questionUpdate($request,$question);
+        $question=$update->questionUpdate($request,$question);
+        if ($request->file('file')) {
+            $update->fileUpdate($request,$question);
+        }
         return redirect("admindashboard");
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Services\UserService;
 use App\Models\{Chat_message,Course,Globalwork,Note,User};
 use Illuminate\{Contracts\Support\Renderable,Http\RedirectResponse,Http\Request,
     Support\Facades\Hash, Validation\ValidationException,Support\Facades\Auth};
@@ -100,7 +101,7 @@ class UsersController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route("logout");
+        return redirect()->route("login");
     }
     public function login(User $user)
     {
@@ -109,28 +110,23 @@ class UsersController extends Controller
     public function admindashboard()
     {
         $course=Course::all();
-        $notes=Note::all();
-        $user_message=Chat_message::where("checked_by_admin","!=",true)->latest()->get();
-        return view("questions.admindashboard",["courses"=>$course,"notes"=>$notes,"user_messages"=>$user_message]);
+        return view("questions.admindashboard",["courses"=>$course]);
     }
     public function settings()
     {   $user=auth()->user();
         return view("users.settings",["user"=>$user]);
     }
-    public function chats(){
-        $info=[];
-        $chats=Globalwork::has("messages")->distinct()->get();
-        foreach ($chats as $chat){
-            $info[]=["userName"=>$chat->user()->first()->name,"globalworks"=>$chat];
-        }
-        return view("messages.chats",["info"=>$info]);
-    }
+
     public function dashboard():Renderable
     {
         $user=Auth::user();
-        $joined_courses= Course::whereHas("globalworksGet")->get();
-        $available_courses=Course::all()->diff($joined_courses)->where("course_complete","!=",null);
-        $chats=Globalwork::has("messages")->where("user_id",\auth()->user()->id)->get();
-        return view("users.dashboard", ["user" => $user, "courses" => $available_courses, "joined_courses" => $joined_courses,"chats"=>$chats]);
+        $service = new UserService($user);
+        $joined_courses=$service->joinedCourses();
+        $available_courses=$service->availableCourses();
+        return view("users.dashboard", ["user" => $user, "courses" => $available_courses, "joined_courses" => $joined_courses]);
+    }
+    public function projInfo():Renderable
+    {
+        return view('welcome');
     }
 }

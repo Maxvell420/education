@@ -20,6 +20,7 @@ class Question extends Model
     public function course(){
         return $this->belongsTo(Course::class);
     }
+//    download(s) работает?
     public function downloads(){
         return $this->hasOne(Downloads::class);
     }

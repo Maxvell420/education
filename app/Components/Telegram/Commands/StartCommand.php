@@ -19,10 +19,13 @@ class StartCommand extends Command
     {
 //        чекать есть ли юзер
         $update = $this->update;
+        $from=$update->message->from;
+        $user = User::where('telegram_id',$from->id)->first();
+        if (!$user) {
+            $name=$from->username??$from->firstName;
+            User::create(['name'=>$name, 'telegram_id'=>$from->id]);
+        }
         $request = new MessageHandler();
         $request->handle($update);
-        $user=$this->getUpdate()->message->from;
-        $name = $user->username??$user->firstName;
-        User::create(['name'=>$name, 'telegram_id'=>$user->id]);
     }
 }

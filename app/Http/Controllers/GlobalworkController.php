@@ -38,7 +38,7 @@ class GlobalworkController extends Controller
     }
     public function Create(Course $course,  Examine $examine=null, Collection $questions = null):RedirectResponse
     {
-        $userService = new UserService(auth()->user()->id);
+        $userService = new UserService(auth()->user());
         $userService->courseJoin($course,$examine,$questions);
         return redirect()->route("course.show",$course);
     }

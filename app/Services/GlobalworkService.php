@@ -6,6 +6,7 @@ use App\Models\{Chain, Course, Downloads, Exam, Examine, Globalwork, Question, U
 use App\Http\Requests\AnswersRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Request;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class GlobalworkService
 {
@@ -25,12 +26,12 @@ class GlobalworkService
     }
     private function getDownloads():?Downloads
     {
-        return Downloads::where("question_id",$this->question->id)->first();
+        return $this->question->downloads()->first();
     }
     public function GlobalworkShowData():Collection
     {
-        $file=$this->getDownloads();
-        return $this->data=collect(['course'=>$this->course,'question'=>$this->question,'file'=>$file,'examine'=>$this->examine]);
+        $download=$this->getDownloads();
+        return $this->data=collect(['course'=>$this->course,'Название'=>$this->question,'file'=>$download,'examine'=>$this->examine]);
     }
     public function GlobalworkUpdate(string $user_answer):void
     {
@@ -46,7 +47,7 @@ class GlobalworkService
             ];
             $this->globalwork->increment("num_attempts",1,$param);
             $this->globalwork->save();
-        $this->question->increment("num_attempts",1);
+        $this->question->increment("num_attempts");
     }
     public function answerCheck():string
     {

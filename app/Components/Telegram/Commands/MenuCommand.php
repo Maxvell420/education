@@ -5,7 +5,6 @@ namespace App\Components\Telegram\Commands;
 use App\Models\User;
 use App\Services\BotService;
 use App\Services\botv2\MessageHandler;
-use App\Services\botv2\UserMessageHandler;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Laravel\Facades\Telegram;
 

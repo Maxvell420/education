@@ -2,19 +2,19 @@
 
 namespace App\Services\botv2;
 
+use App\Components\TelegramAPI;
 use App\Events\BotRebootEvent;
-use App\Events\ChainCreateEvent;
 use App\Http\Controllers\BotControllerV2;
 use App\Models\Chain;
 use App\Models\Course;
 use App\Models\Globalwork;
 use App\Models\Question;
 use App\Models\Url;
-use App\Models\User;
 use App\Services\GlobalworkService;
 use App\Services\QuestionService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Http\UploadedFile;
 use Telegram\Bot\Keyboard\Keyboard;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -37,7 +37,7 @@ class ReplyKeyboardResponse extends BotService
                 $this->courseOpen(Course::find(substr($message,12)));
                 return true;
             }
-            if ($message == '/course_create') {
+            if ($message == '/course_crea') {
                 $this->courseCreateOrUpdatePreparation();
                 return true;
             }
@@ -113,8 +113,9 @@ class ReplyKeyboardResponse extends BotService
         $globalwork=Globalwork::find($globalwork_id);
         $globalworkService= new GlobalworkService($globalwork);
         $this->userChainCreate($globalwork);
-        $question=$globalworkService->GlobalworkShowData()['question'];
-        $photo=$question->downloads()->first();
+        $data=$globalworkService->GlobalworkShowData();
+        $question = $data['Название'];
+        $photo=$data['file'];
         if ($photo!=null) {
             Telegram::sendPhoto(['chat_id'=>$this->user->telegram_id,'photo'=>$photo->file_id]);
         }
@@ -159,7 +160,8 @@ class ReplyKeyboardResponse extends BotService
     {
         $chain = $this->user->chain();
         $chain->delete();
-        $chain=$chain->create(['admin'=>true,'course_id'=>substr($message,12)??-1]);
+        $id = substr($message, 12) ?: -1;
+        $chain=$chain->create(['admin'=>true,'course_id'=>$id]);
         if ($chain->course_id>0) {
             $course = $chain->course()->first();
             $chain->variable_1 = $course->courseName;
@@ -246,7 +248,7 @@ class ReplyKeyboardResponse extends BotService
                 return $message;
         }
     }
-    private function questionUpdateOrCreatePreparation(Model $model):void
+    private function questionUpdateOrCreatePreparation(Model|null $model):void
     {
         $this->user->chain()->delete();
         $chain = $this->userChainCreate($model);
@@ -316,7 +318,7 @@ class ReplyKeyboardResponse extends BotService
                 $this->text=$this->text.'. Можешь прислать мне изображение к вопросу';
         }
         if (!isset($this->keyboard)){
-            $this->questionCreateOrUpdateMenu();
+            $this->questionCreateOrUpdateMenu($chain);
         }
         return $this->text;
     }
@@ -327,22 +329,38 @@ class ReplyKeyboardResponse extends BotService
                 $this->questionChainCheck($chain);
                 return null;
             case 'Редактировать':
-                $this->chainQuestionEditMenu();
+                $this->chainQuestionEditMenu($chain);
                 break;
             case 'Тему вопроса':
                 $chain->update(['variable_1'=>null]);
                 break;
+            case 'Удалить вопрос' and $chain->question_id>0:
+                $question = $chain->Question()->first();
+                $this->keyboard = Keyboard::remove(['remove_keyboard' => true,]);
+                $chain->delete();
+                $this->keyboard = Keyboard::remove(['remove_keyboard' => true,]);
+                $service = new QuestionService();
+                $service->questionDelete($question);
+                $this->text = 'Вопрос был удален';
+                break;
             case 'Сохранить вопрос в курс':
-                if (!$chain['course_id']){
-                    $question = $chain->question()->first();
-                    $course_id = $question->course()->first()->id;
-                    $chain->course_id = $course_id;
-                }
                 $request=$this->chainQuestionRequest($chain);
-                $question= new QuestionService();
-                $course=Course::find($chain->course_id);
+                $service = new QuestionService();
+                if ($chain['question_id']>0) {
+                    $question = $chain->question()->first();
+                    $course=$question->course()->first();
+                    $chain['course_id'] = $course->id;
+                }
+                else {
+                    $course = $chain->course()->first();
+                }
                 try {
-                    $question->questionCreate($request,$course);
+                    if (isset($question)) {
+                        $service->questionUpdate($request,$question);
+                        $service->fileUpdate($request,$question);
+                    } else {
+                        $service->questionCreate($request,$course);
+                    }
                 }
                 catch (\Exception $e) {
                     $this->text=$e->getMessage();
@@ -394,46 +412,59 @@ class ReplyKeyboardResponse extends BotService
             Telegram::sendPhoto(['chat_id'=>$this->user->telegram_id,'photo'=>$chain->variable_8]);
         }
     }
-    private function chainQuestionEditMenu()
+    private function chainQuestionEditMenu():void
     {
-        $this->text='Что вы хотите редактировать?';
-        $this->buttons[]=Keyboard::button([['text'=>'Тему вопроса']]);
-        $this->buttons[]=Keyboard::button([['text'=>'Проблему вопроса']]);
-        $this->buttons[]=Keyboard::button([['text'=>'Вариант ответа 1']]);
-        $this->buttons[]=Keyboard::button([['text'=>'Вариант ответа 2']]);
-        $this->buttons[]=Keyboard::button([['text'=>'Вариант ответа 3']]);
-        $this->buttons[]=Keyboard::button([['text'=>'Вариант ответа 4']]);
-        $this->buttons[]=Keyboard::button([['text'=>'Номер правильного варианта']]);
-        $this->buttons[]=Keyboard::button([['text'=>'Изображение к вопросу']]);
-        $this->buttons[]= Keyboard::button([['text'=>'/exit']]);
-        $this->keyboard=Keyboard::make(['keyboard'=>$this->buttons,'one_time_keyboard'=>true]);
-        return null;
+        $this->text = 'Что вы хотите редактировать?';
+
+        $buttonTexts = [
+            'Тему вопроса',
+            'Проблему вопроса',
+            'Вариант ответа 1',
+            'Вариант ответа 2',
+            'Вариант ответа 3',
+            'Вариант ответа 4',
+            'Номер правильного варианта',
+            'Изображение к вопросу',
+            '/exit'
+        ];
+        foreach ($buttonTexts as $text) {
+            $this->buttons[] = Keyboard::button([['text' => $text]]);
+        }
+
+        $this->keyboard = Keyboard::make(['keyboard' => $this->buttons, 'one_time_keyboard' => true]);
     }
-    private function questionCreateOrUpdateMenu(): void
+    private function questionCreateOrUpdateMenu(Chain $chain): void
     {
         $this->buttons[]=Keyboard::button([['text'=>'Сохранить вопрос в курс']]);
         $this->buttons[]= Keyboard::button([['text'=>'Посмотреть данные вопроса']]);
         $this->buttons[]= Keyboard::button([['text'=>'Редактировать']]);
+        if ($chain->question_id>0) {
+            $this->buttons[] = Keyboard::button([['text'=>'Удалить вопрос']]);;
+        }
         $this->buttons[]= Keyboard::button([['text'=>'/exit']]);
         $this->keyboard=Keyboard::make(['keyboard'=>$this->buttons,'one_time_keyboard'=>true]);
     }
+
     private function chainQuestionRequest(Chain $chain):\Illuminate\Http\Request
     {
-        $request = request()->merge([
-            'question_id'=>$chain->question_id,
-            'title'=>$chain->variable_1,
-            'problem'=>$chain->variable_2,
-            'answer_1'=>$chain->variable_3,
-            'answer_2'=>$chain->variable_4,
-            'answer_3'=>$chain->variable_5,
-            'answer_4'=>$chain->variable_6,
-            'correct_answer'=>$chain->variable_7,
-        ]);
-        if (isset($chain->variable_8)){
-            $request->merge(['file_id'=>$chain->variable_8]);
+        $requestData = [
+            'question_id' => $chain->question_id,
+            'title' => $chain->variable_1,
+            'problem' => $chain->variable_2,
+            'answer_1' => $chain->variable_3,
+            'answer_2' => $chain->variable_4,
+            'answer_3' => $chain->variable_5,
+            'answer_4' => $chain->variable_6,
+            'correct_answer' => $chain->variable_7,
+        ];
+
+        if (isset($chain->variable_8)) {
+            $requestData['file'] = $this->getPic($chain);
         }
-        $request->headers->set('Accept','application/json');
-        $request->headers->set('Content-Type','application/json');
+
+        $request = request()->merge($requestData);
+        $request->headers->set('Accept', 'application/json');
+        $request->headers->set('Content-Type', 'application/json');
         return $request;
     }
     private function courseOpen(Course $course):void
@@ -441,4 +472,16 @@ class ReplyKeyboardResponse extends BotService
         $course->update(['course_complete'=>true]);
         $this->text='Курс был открыт для записи';
     }
+
+    private function getPic(Chain $chain):UploadedFile
+    {
+        $path = Telegram::getFile(['file_id'=>$chain->variable_8])->filePath;
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'prefix');
+        $import = new TelegramAPI();
+        $response = $import->client->request('GET','file/bot'.env('TELEGRAM_BOT_TOKEN').'/'.$path);
+        $fileContent = $response->getBody()->getContents();
+        file_put_contents($tempFilePath, $fileContent);
+        return new UploadedFile($tempFilePath ,'Question:'.$chain->variable_1.'.jpg','image/jpeg',null,true);
+    }
+
 }

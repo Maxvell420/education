@@ -16,7 +16,7 @@ class MessageHandler implements iHandle
             if (isset($update->message->photo)) {
                 $chain = $user->chain()->first();
                 if ($chain->admin and $chain->question_id){
-                    foreach ($update->message->photo as $photo){
+                    foreach ($update->message->photo->reverse() as $photo){
                         $file_id=$photo->file_id;
                         $chain->update(['variable_8'=>$file_id]);
                         return ['text'=>'Изображение было сохранено',
